@@ -21,8 +21,8 @@ list(APPEND CMAKE_MODULE_PATH ${POMEROL_PATH}/share/pomerol/cmake)
 # Load TRIQS, including all predefined variables from TRIQS installation
 find_package(TRIQS REQUIRED)
 
-if(NOT TRIQS_VERSION EQUAL 1.5)
-    message(FATAL_ERROR "The application requires the TRIQS library version 1.5 (got ${TRIQS_VERSION})")
+if(NOT TRIQS_VERSION EQUAL 1.4)
+    message(FATAL_ERROR "The application requires the TRIQS library version 1.4 (got ${TRIQS_VERSION})")
 endif()
 
 # Load Pomerol

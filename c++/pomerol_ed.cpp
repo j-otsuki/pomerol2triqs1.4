@@ -327,6 +327,7 @@ namespace pomerol2triqs {
   // Two-particle Green's function //
   ///////////////////////////////////
 
+/*
   template <typename Mesh, typename Filler>
   auto pomerol_ed::compute_g2(gf_struct_t const &gf_struct, gf_mesh<Mesh> const &mesh, block_order_t block_order, g2_blocks_t const &g2_blocks,
                               Filler filler) const -> block2_gf<Mesh, tensor_valued<4>> {
@@ -535,4 +536,5 @@ namespace pomerol2triqs {
 
     return g2;
   }
+*/
 }

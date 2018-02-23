@@ -10,10 +10,10 @@
 #include <triqs/gfs.hpp>
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/hilbert_space/fundamental_operator_set.hpp>
-#include <triqs/utility/optional_compat.hpp>
+// #include <triqs/utility/optional_compat.hpp>
 #include <triqs/mpi/boost.hpp>
 
-#include "g2_parameters.hpp"
+// #include "g2_parameters.hpp"
 
 namespace pomerol2triqs {
 
@@ -62,9 +62,9 @@ namespace pomerol2triqs {
 
     using w_nu_nup_t = cartesian_product<imfreq, imfreq, imfreq>;
     using w_l_lp_t   = cartesian_product<imfreq, legendre, legendre>;
-    template <typename Mesh, typename Filler>
-    block2_gf<Mesh, tensor_valued<4>> compute_g2(gf_struct_t const &gf_struct, gf_mesh<Mesh> const &mesh, block_order_t block_order,
-                                                 g2_blocks_t const &g2_blocks, Filler filler) const;
+    // template <typename Mesh, typename Filler>
+    // block2_gf<Mesh, tensor_valued<4>> compute_g2(gf_struct_t const &gf_struct, gf_mesh<Mesh> const &mesh, block_order_t block_order,
+    //                                              g2_blocks_t const &g2_blocks, Filler filler) const;
 
     public:
     /// Create a new solver object
@@ -86,11 +86,11 @@ namespace pomerol2triqs {
     block_gf<refreq> G_w(gf_struct_t const &gf_struct, double beta, std::pair<double, double> const &energy_window, int n_w, double im_shift = 0);
 
     /// Two-particle Green's function, Matsubara frequencies
-    TRIQS_WRAP_ARG_AS_DICT
-    block2_gf<w_nu_nup_t, tensor_valued<4>> G2_iw_inu_inup(g2_iw_inu_inup_params_t const &p);
+    // TRIQS_WRAP_ARG_AS_DICT
+    // block2_gf<w_nu_nup_t, tensor_valued<4>> G2_iw_inu_inup(g2_iw_inu_inup_params_t const &p);
 
     /// Two-particle Green's function, bosonic Matsubara frequency + Legendre coefficients
-    TRIQS_WRAP_ARG_AS_DICT
-    block2_gf<w_l_lp_t, tensor_valued<4>> G2_iw_l_lp(g2_iw_l_lp_params_t const &p);
+    // TRIQS_WRAP_ARG_AS_DICT
+    // block2_gf<w_l_lp_t, tensor_valued<4>> G2_iw_l_lp(g2_iw_l_lp_params_t const &p);
   };
 }
