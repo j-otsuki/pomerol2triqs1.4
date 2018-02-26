@@ -127,17 +127,6 @@ namespace pomerol2triqs {
       std::cout << "Number of Blocks is " << states_class->NumberOfBlocks() << std::endl;
     }
 
-    // Save quantum numbers and block size
-    if (verbose && !comm.rank()) { // TODO : enable no output
-      std::string filename("quantum_numbers.dat");  // TODO : specify externally
-      std::ofstream fout(filename);
-      fout << "# block_size quantum_numbers" << std::endl;
-      for (Pomerol::BlockNumber i=0; i<states_class->NumberOfBlocks(); i++)
-        fout << states_class->getBlockSize(i) << "  " << states_class->getQuantumNumbers(i) << std::endl;
-      fout.close();
-      std::cout << "'" << filename << "'" << std::endl;
-    }
-
     if (verbose && !comm.rank()) { std::cout << "\nPomerol: diagonalizing Hamiltonian" << std::endl; }
     // Matrix representation of the Hamiltonian
     matrix_h.reset(new Pomerol::Hamiltonian(index_info, *storage, *states_class));
@@ -146,27 +135,6 @@ namespace pomerol2triqs {
 
     // Get ground state energy
     if (verbose && !comm.rank()) { std::cout << "\nPomerol: ground state energy is " << matrix_h->getGroundEnergy() + gs_shift << std::endl; }
-
-    // Save all eigenvalues and corresponding quantum numbers
-    if (verbose && !comm.rank()) { // TODO : enable no output
-      // create a list of pairs of eigenvalue and quantum numers to sort
-      std::vector< std::pair<double, Pomerol::QuantumNumbers> > eigen;
-      for (Pomerol::BlockNumber i=0; i<states_class->NumberOfBlocks(); i++){
-          Pomerol::HamiltonianPart H_part = matrix_h->getPart(i);
-          for (Pomerol::InnerQuantumState j=0; j<H_part.getSize(); j++)
-              eigen.push_back( std::make_pair( H_part.getEigenValue(j), H_part.getQuantumNumbers() ) );
-      }
-      // sort eigenvalues in ascending order
-      std::sort(eigen.begin(), eigen.end());
-      // write into a file
-      std::string filename("eigenvalues.dat");  // TODO : specify externally
-      std::ofstream fout(filename);
-      fout << "# eigenvalues quantum_numbers" << std::endl;
-      for (auto e : eigen)
-        fout << e.first << "  " << e.second << std::endl;
-      fout.close();
-      std::cout << "'" << filename << "'" << std::endl;
-    }
 
     // Reset containers, we will compute them later if needed
     rho.release();
@@ -220,6 +188,42 @@ namespace pomerol2triqs {
     symm->compute(iom);
 
     diagonalize_main(gs_shift);
+  }
+
+  void pomerol_ed::saveQuantumNumbers(const std::string &filename) {
+    if (!states_class) TRIQS_RUNTIME_ERROR << "saveQuantumNumbers: internal error!";
+
+    if (!comm.rank()) {
+      std::ofstream fout(filename);
+      fout << "# block_size quantum_numbers" << std::endl;
+      for (Pomerol::BlockNumber i=0; i<states_class->NumberOfBlocks(); i++)
+      fout << states_class->getBlockSize(i) << "  " << states_class->getQuantumNumbers(i) << std::endl;
+      fout.close();
+      std::cout << "'" << filename << "'" << std::endl;
+    }
+  }
+
+  void pomerol_ed::saveEigenValues(const std::string &filename) {
+    if (!states_class || !matrix_h) TRIQS_RUNTIME_ERROR << "saveEigenValues: internal error!";
+
+    if (!comm.rank()) {
+      // create a list of pairs of eigenvalue and quantum numers to sort
+      std::vector< std::pair<double, Pomerol::QuantumNumbers> > eigen;
+      for (Pomerol::BlockNumber i=0; i<states_class->NumberOfBlocks(); i++){
+          Pomerol::HamiltonianPart H_part = matrix_h->getPart(i);
+          for (Pomerol::InnerQuantumState j=0; j<H_part.getSize(); j++)
+              eigen.push_back( std::make_pair( H_part.getEigenValue(j), H_part.getQuantumNumbers() ) );
+      }
+      // sort eigenvalues in ascending order
+      std::sort(eigen.begin(), eigen.end());
+      // write into a file
+      std::ofstream fout(filename);
+      fout << "# eigenvalues quantum_numbers" << std::endl;
+      for (auto e : eigen)
+        fout << e.first << "  " << e.second << std::endl;
+      fout.close();
+      std::cout << "'" << filename << "'" << std::endl;
+    }
   }
 
   Pomerol::ParticleIndex pomerol_ed::lookup_pomerol_index(indices_t const &i) const {

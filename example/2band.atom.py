@@ -66,6 +66,10 @@ H -= mu*N
 # Diagonalize H
 ed.diagonalize(H)
 
+# save data
+ed.saveQuantumNumbers("quantum_numbers.dat")
+ed.saveEigenValues("eigenvalues.dat")
+
 # Compute G(i\omega)
 G_iw = ed.G_iw(gf_struct, beta, n_iw)
 

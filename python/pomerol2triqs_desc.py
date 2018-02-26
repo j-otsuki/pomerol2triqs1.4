@@ -47,6 +47,12 @@ c.add_method("""void diagonalize (many_body_op_t hamiltonian, bool ignore_symmet
 c.add_method("""void diagonalize (many_body_op_t hamiltonian, std::vector<many_body_op_t> integrals_of_motion)""",
              doc = """Diagonalize Hamiltonian using provided integrals of motion """)
 
+c.add_method("""void saveQuantumNumbers (std::string filename)""",
+             doc = """Save quantum numbers and block size """)
+
+c.add_method("""void saveEigenValues (std::string filename)""",
+             doc = """Save all eigenvalues and corresponding quantum numbers """)
+
 c.add_method("""block_gf<imfreq> G_iw (gf_struct_t gf_struct, double beta, int n_iw)""",
              doc = """Green\'s function in Matsubara frequencies """)
 
