@@ -254,6 +254,8 @@ namespace pomerol2triqs {
       rho.reset(new Pomerol::DensityMatrix(*states_class, *matrix_h, beta));
       rho->prepare();
       rho->compute();
+      double DensityMatrixCutoff = 1e-10;  // TODO : specify externally
+      rho->truncateBlocks(DensityMatrixCutoff, verbose);
     }
   }
 
