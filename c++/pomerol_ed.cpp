@@ -3,6 +3,8 @@
 #include <boost/math/special_functions/bessel.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <triqs/arrays.hpp>
+#include <fstream>
+#include <algorithm>
 
 namespace pomerol2triqs {
 
@@ -49,9 +51,9 @@ namespace pomerol2triqs {
      : verbose(verbose), index_converter(index_converter), bare_lattice(init()), index_info(bare_lattice.getSiteMap()) {
     index_info.prepare();
     if (verbose && !comm.rank()) {
-      std::cout << "Pomerol: lattice sites" << std::endl;
+      std::cout << "\nPomerol: lattice sites" << std::endl;
       bare_lattice.printSites();
-      std::cout << "Pomerol: operator indices" << std::endl;
+      std::cout << "\nPomerol: operator indices" << std::endl;
       index_info.printIndices();
     }
   }
@@ -104,7 +106,7 @@ namespace pomerol2triqs {
     storage->prepare();
 
     if (verbose && !comm.rank()) {
-      std::cout << "Pomerol: terms of Hamiltonian" << std::endl;
+      std::cout << "\nPomerol: terms of Hamiltonian" << std::endl;
       std::cout << *storage << std::endl;
     }
 
@@ -117,13 +119,54 @@ namespace pomerol2triqs {
     states_class.reset(new Pomerol::StatesClassification(index_info, *symm));
     states_class->compute();
 
+    // Print info on states and blocks
+    if (verbose && !comm.rank()) {
+      std::cout << "\nPomerol: states classified" << std::endl;
+      std::cout << "Conserved quantum numbers: " << symm->getQuantumNumbers() << std::endl;
+      std::cout << "Number of States is " << states_class->getNumberOfStates() << std::endl;
+      std::cout << "Number of Blocks is " << states_class->NumberOfBlocks() << std::endl;
+    }
+
+    // Save quantum numbers and block size
+    if (verbose && !comm.rank()) { // TODO : enable no output
+      std::string filename("quantum_numbers.dat");  // TODO : specify externally
+      std::ofstream fout(filename);
+      fout << "# block_size quantum_numbers" << std::endl;
+      for (Pomerol::BlockNumber i=0; i<states_class->NumberOfBlocks(); i++)
+        fout << states_class->getBlockSize(i) << "  " << states_class->getQuantumNumbers(i) << std::endl;
+      fout.close();
+      std::cout << "'" << filename << "'" << std::endl;
+    }
+
+    if (verbose && !comm.rank()) { std::cout << "\nPomerol: diagonalizing Hamiltonian" << std::endl; }
     // Matrix representation of the Hamiltonian
     matrix_h.reset(new Pomerol::Hamiltonian(index_info, *storage, *states_class));
     matrix_h->prepare(comm);
     matrix_h->compute(comm);
 
     // Get ground state energy
-    if (verbose && !comm.rank()) { std::cout << "Pomerol: ground state energy is " << matrix_h->getGroundEnergy() + gs_shift << std::endl; }
+    if (verbose && !comm.rank()) { std::cout << "\nPomerol: ground state energy is " << matrix_h->getGroundEnergy() + gs_shift << std::endl; }
+
+    // Save all eigenvalues and corresponding quantum numbers
+    if (verbose && !comm.rank()) { // TODO : enable no output
+      // create a list of pairs of eigenvalue and quantum numers to sort
+      std::vector< std::pair<double, Pomerol::QuantumNumbers> > eigen;
+      for (Pomerol::BlockNumber i=0; i<states_class->NumberOfBlocks(); i++){
+          Pomerol::HamiltonianPart H_part = matrix_h->getPart(i);
+          for (Pomerol::InnerQuantumState j=0; j<H_part.getSize(); j++)
+              eigen.push_back( std::make_pair( H_part.getEigenValue(j), H_part.getQuantumNumbers() ) );
+      }
+      // sort eigenvalues in ascending order
+      std::sort(eigen.begin(), eigen.end());
+      // write into a file
+      std::string filename("eigenvalues.dat");  // TODO : specify externally
+      std::ofstream fout(filename);
+      fout << "# eigenvalues quantum_numbers" << std::endl;
+      for (auto e : eigen)
+        fout << e.first << "  " << e.second << std::endl;
+      fout.close();
+      std::cout << "'" << filename << "'" << std::endl;
+    }
 
     // Reset containers, we will compute them later if needed
     rho.release();
@@ -207,7 +250,7 @@ namespace pomerol2triqs {
     if (!states_class || !matrix_h) TRIQS_RUNTIME_ERROR << "compute_rho: internal error!";
 
     if (!rho || rho->beta != beta) {
-      if (verbose && !comm.rank()) std::cout << "Pomerol: computing density matrix for \\beta = " << beta << std::endl;
+      if (verbose && !comm.rank()) std::cout << "\nPomerol: computing density matrix for beta = " << beta << std::endl;
       rho.reset(new Pomerol::DensityMatrix(*states_class, *matrix_h, beta));
       rho->prepare();
       rho->compute();
@@ -220,7 +263,7 @@ namespace pomerol2triqs {
     auto new_ops = gf_struct_to_pomerol_indices(gf_struct);
     if (!ops_container || computed_ops != new_ops) {
       if (verbose && !comm.rank()) {
-        std::cout << "Pomerol: computing field operators with indices ";
+        std::cout << "\nPomerol: computing field operators with indices ";
         bool comma = false;
         for (auto i : new_ops) {
           std::cout << (comma ? ", " : "") << i;
