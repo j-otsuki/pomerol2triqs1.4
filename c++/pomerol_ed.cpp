@@ -294,6 +294,8 @@ namespace pomerol2triqs {
 
     if (!states_class || !matrix_h || !rho || !ops_container) TRIQS_RUNTIME_ERROR << "compute_gf: internal error!";
 
+    if (verbose && !comm.rank()) { std::cout << "\nPomerol: computing GF" << std::endl; }
+
     struct index_visitor {
       std::vector<std::string> indices;
       void operator()(int i) { indices.push_back(std::to_string(i)); }
@@ -375,6 +377,46 @@ namespace pomerol2triqs {
   // Two-particle Green's function //
   ///////////////////////////////////
 
+  auto pomerol_ed::G2_iw(g2_iw_inu_inup_params_t const &p) -> g2_t {
+    if (!matrix_h) TRIQS_RUNTIME_ERROR << "G2_iw: no Hamiltonian has been diagonalized";
+    compute_rho(p.beta);
+    compute_field_operators(p.gf_struct);
+
+    if (verbose && !comm.rank()) { std::cout << "\nPomerol: computing TwoParticleGF" << std::endl; }
+
+    Pomerol::ParticleIndex pom_i1 = lookup_pomerol_index(p.index1);
+    Pomerol::ParticleIndex pom_i2 = lookup_pomerol_index(p.index2);
+    Pomerol::ParticleIndex pom_i3 = lookup_pomerol_index(p.index3);
+    Pomerol::ParticleIndex pom_i4 = lookup_pomerol_index(p.index4);
+
+    Pomerol::TwoParticleGF pom_g2(*states_class, *matrix_h,
+                                  ops_container->getAnnihilationOperator(pom_i2),
+                                  ops_container->getAnnihilationOperator(pom_i4),
+                                  ops_container->getCreationOperator(pom_i1),
+                                  ops_container->getCreationOperator(pom_i3),
+                                  *rho);
+    pom_g2.prepare();
+    pom_g2.compute(false, {}, comm);
+
+    // indices of fermionic Matsubara frequencies [-n_f:n_f)
+    std::vector<int> index_wf(2*p.n_f);
+    std::iota(index_wf.begin(), index_wf.end(), -p.n_f);
+    // for( auto i : iw_f )  std::cout << i << std::endl;
+
+    // indices of bosonic Matsubara frequencies [0:n_b)
+    std::vector<int> index_wb(p.n_b);
+    std::iota(index_wb.begin(), index_wb.end(), 0);
+    // for( auto i : iw_b )  std::cout << i << std::endl;
+
+    g2_t g2(p.n_b, 2*p.n_f, 2*p.n_f);
+    for(int ib=0; ib<index_wb.size(); ib++)
+      for(int if1=0; if1<index_wf.size(); if1++)
+        for(int if2=0; if2<index_wf.size(); if2++)
+          g2(ib, if1, if2) = -pom_g2(index_wb[ib]+index_wf[if1], index_wf[if2], index_wf[if1]);
+
+    return g2;
+  }
+
 /*
   template <typename Mesh, typename Filler>
   auto pomerol_ed::compute_g2(gf_struct_t const &gf_struct, gf_mesh<Mesh> const &mesh, block_order_t block_order, g2_blocks_t const &g2_blocks,
@@ -453,68 +495,65 @@ namespace pomerol2triqs {
 
     return make_block2_gf(block_names, block_names, std::move(gf_vecvec));
   }
-*/
 
-  auto pomerol_ed::G2_iw(g2_iw_inu_inup_params_t const &p) -> g2_t {
-  // auto pomerol_ed::G2_iw_inu_inup(g2_iw_inu_inup_params_t const &p) -> block2_gf<w_nu_nup_t, tensor_valued<4>> {
+  auto pomerol_ed::G2_iw_inu_inup(g2_iw_inu_inup_params_t const &p) -> block2_gf<w_nu_nup_t, tensor_valued<4>> {
     if (!matrix_h) TRIQS_RUNTIME_ERROR << "G2_iw_inu_inup: no Hamiltonian has been diagonalized";
     compute_rho(p.beta);
     compute_field_operators(p.gf_struct);
 
     if (verbose && !comm.rank()) std::cout << "G2_iw_inu_inup: filling output container" << std::endl;
 
-    // auto filler = [&p, this](gf_view<w_nu_nup_t, scalar_valued> g2_el, auto const &pom_g2) {
-    //   long mesh_index = 0;
-    //   for (auto w_nu_nup : g2_el.mesh()) {
-    //     if ((mesh_index++) % comm.size() != comm.rank()) continue;
-    //
-    //     if (p.channel == AllFermionic) {
-    //
-    //       int n1 = std::get<0>(w_nu_nup).index();
-    //       int n2 = std::get<1>(w_nu_nup).index();
-    //       int n3 = std::get<2>(w_nu_nup).index();
-    //
-    //       if (p.block_order == AABB)
-    //         g2_el[w_nu_nup] = -pom_g2(n2, n1 + n3 - n2, n1);
-    //       else
-    //         g2_el[w_nu_nup] = +pom_g2(n1 + n3 - n2, n2, n1);
-    //
-    //     } else { // p.channel == PH or PP
-    //
-    //       int w_n   = std::get<0>(w_nu_nup).index();
-    //       int nu_n  = std::get<1>(w_nu_nup).index();
-    //       int nup_n = std::get<2>(w_nu_nup).index();
-    //
-    //       int W_n = p.channel == PH ? w_n + nu_n : w_n - nup_n - 1;
-    //
-    //       if (p.block_order == AABB) {
-    //         g2_el[w_nu_nup] = -pom_g2(W_n, nup_n, nu_n);
-    //       } else {
-    //         g2_el[w_nu_nup] = +pom_g2(nup_n, W_n, nu_n);
-    //       }
-    //     }
-    //   }
-    // };
+    auto filler = [&p, this](gf_view<w_nu_nup_t, scalar_valued> g2_el, auto const &pom_g2) {
+      long mesh_index = 0;
+      for (auto w_nu_nup : g2_el.mesh()) {
+        if ((mesh_index++) % comm.size() != comm.rank()) continue;
 
-    // gf_mesh<imfreq> mesh_b{p.beta, Boson, p.n_iw};
-    // gf_mesh<imfreq> mesh_f{p.beta, Fermion, p.n_inu};
-    //
-    // gf_mesh<w_nu_nup_t> mesh_bff{mesh_b, mesh_f, mesh_f};
-    // gf_mesh<w_nu_nup_t> mesh_fff{mesh_f, mesh_f, mesh_f};
-    //
-    // block2_gf<w_nu_nup_t, tensor_valued<4>> g2;
-    //
-    // if (p.channel == AllFermionic)
-    //   g2 = compute_g2<w_nu_nup_t>(p.gf_struct, mesh_fff, p.block_order, p.blocks, filler);
-    // else
-    //   g2 = compute_g2<w_nu_nup_t>(p.gf_struct, mesh_bff, p.block_order, p.blocks, filler);
-    //
-    // g2() = mpi_all_reduce(g2(), comm);
-    //
-    // return g2;
+        if (p.channel == AllFermionic) {
+
+          int n1 = std::get<0>(w_nu_nup).index();
+          int n2 = std::get<1>(w_nu_nup).index();
+          int n3 = std::get<2>(w_nu_nup).index();
+
+          if (p.block_order == AABB)
+            g2_el[w_nu_nup] = -pom_g2(n2, n1 + n3 - n2, n1);
+          else
+            g2_el[w_nu_nup] = +pom_g2(n1 + n3 - n2, n2, n1);
+
+        } else { // p.channel == PH or PP
+
+          int w_n   = std::get<0>(w_nu_nup).index();
+          int nu_n  = std::get<1>(w_nu_nup).index();
+          int nup_n = std::get<2>(w_nu_nup).index();
+
+          int W_n = p.channel == PH ? w_n + nu_n : w_n - nup_n - 1;
+
+          if (p.block_order == AABB) {
+            g2_el[w_nu_nup] = -pom_g2(W_n, nup_n, nu_n);
+          } else {
+            g2_el[w_nu_nup] = +pom_g2(nup_n, W_n, nu_n);
+          }
+        }
+      }
+    };
+
+    gf_mesh<imfreq> mesh_b{p.beta, Boson, p.n_iw};
+    gf_mesh<imfreq> mesh_f{p.beta, Fermion, p.n_inu};
+
+    gf_mesh<w_nu_nup_t> mesh_bff{mesh_b, mesh_f, mesh_f};
+    gf_mesh<w_nu_nup_t> mesh_fff{mesh_f, mesh_f, mesh_f};
+
+    block2_gf<w_nu_nup_t, tensor_valued<4>> g2;
+
+    if (p.channel == AllFermionic)
+      g2 = compute_g2<w_nu_nup_t>(p.gf_struct, mesh_fff, p.block_order, p.blocks, filler);
+    else
+      g2 = compute_g2<w_nu_nup_t>(p.gf_struct, mesh_bff, p.block_order, p.blocks, filler);
+
+    g2() = mpi_all_reduce(g2(), comm);
+
+    return g2;
   }
 
-/*
   auto pomerol_ed::G2_iw_l_lp(g2_iw_l_lp_params_t const &p) -> block2_gf<w_l_lp_t, tensor_valued<4>> {
     if (!matrix_h) TRIQS_RUNTIME_ERROR << "G2_iw_l_lp: no Hamiltonian has been diagonalized";
     compute_rho(p.beta);

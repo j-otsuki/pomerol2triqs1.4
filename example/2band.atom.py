@@ -49,6 +49,7 @@ print "Block structure of single-particle Green's functions:", gf_struct
 # Pomerol: site_label, orbital_index, spin_name
 index_converter = {(sn, o) : ("loc", o, "down" if sn == "dn" else "up")
                    for sn, o in product(spin_names, orb_names)}
+print "index_converter:", index_converter
 
 # Make PomerolED solver object
 ed = PomerolED(index_converter, verbose = True)
@@ -86,14 +87,20 @@ G_w = ed.G_w(gf_struct, beta, energy_window, n_w, 0.01)
 # G^{(2)} #
 ###########
 
-# common_g2_params = {'gf_struct' : gf_struct,
-#                     'beta' : beta,
-#                     'blocks' : g2_blocks,
-#                     'n_iw' : g2_n_iw}
+common_g2_params = {'channel' : "PH",
+                    'gf_struct' : gf_struct,
+                    'beta' : beta,
+                    'n_f' : 5,
+                    'n_b' : 1, }
 
 ###############################
 # G^{(2)}(i\omega;i\nu,i\nu') #
 ###############################
+
+G2_iw = ed.G2_iw( index1=('up',0), index2=('dn',0), index3=('dn',1), index4=('up',1), **common_g2_params )
+print type(G2_iw)
+print G2_iw.shape
+
 
 # # Compute G^{(2),ph}(i\omega;i\nu,i\nu'), AABB block order
 # G2_iw_inu_inup_ph_AABB = ed.G2_iw_inu_inup(channel = "PH",

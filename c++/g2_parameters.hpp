@@ -2,13 +2,14 @@
 
 #include <triqs/hilbert_space/fundamental_operator_set.hpp>
 using triqs::hilbert_space::gf_struct_t;
+using indices_t = triqs::hilbert_space::fundamental_operator_set::indices_t;
 
 namespace pomerol2triqs {
 
-  enum block_order_t { AABB, ABBA };
+  // enum block_order_t { AABB, ABBA };
   enum channel_t { PP, PH, AllFermionic };
 
-  using g2_blocks_t = std::set<std::pair<std::string, std::string>>;
+  // using g2_blocks_t = std::set<std::pair<std::string, std::string>>;
 
   struct g2_iw_inu_inup_params_t {
 
@@ -21,23 +22,19 @@ namespace pomerol2triqs {
     /// Channel in which Matsubara frequency representation is defined.
     channel_t channel = PH;
 
-    /// Order of block indices in the definition of G^2.
-    block_order_t block_order = AABB;
-
-    /// List of block index pairs of G^2 to measure.
-    /// default: measure all blocks
-    g2_blocks_t blocks = g2_blocks_t{};
-
     /// Number of bosonic Matsubara frequencies.
-    int n_iw = 30;
+    int n_b;
 
     /// Number of fermionic Matsubara frequencies.
-    int n_inu = 30;
+    int n_f;
+
+    /// indices of operators in TRIQS convention: (block_name, inner_index)
+    indices_t index1, index2, index3, index4;
 
     g2_iw_inu_inup_params_t() {}
     g2_iw_inu_inup_params_t(gf_struct_t const &gf_struct, double beta) : gf_struct(gf_struct), beta(beta) {}
   };
-
+/*
   struct g2_iw_l_lp_params_t {
 
     /// Structure of G^2 blocks.
@@ -71,4 +68,5 @@ namespace pomerol2triqs {
     g2_iw_l_lp_params_t() {}
     g2_iw_l_lp_params_t(gf_struct_t const &gf_struct, double beta) : gf_struct(gf_struct), beta(beta) {}
   };
+*/
 }
