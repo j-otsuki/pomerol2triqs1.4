@@ -53,6 +53,9 @@ c.add_method("""void saveQuantumNumbers (std::string filename)""",
 c.add_method("""void saveEigenValues (std::string filename)""",
              doc = """Save all eigenvalues and corresponding quantum numbers """)
 
+c.add_method("""void setDensityMatrixCutoff (double DensityMatrixCutoff)""",
+             doc = """Set DensityMatrixCutoff (default: 1e-15, 0 = No cutoff). DensityMatrix will be recomputed. """)
+
 c.add_method("""block_gf<imfreq> G_iw (gf_struct_t gf_struct, double beta, int n_iw)""",
              doc = """Green\'s function in Matsubara frequencies """)
 

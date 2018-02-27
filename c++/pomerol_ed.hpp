@@ -66,6 +66,8 @@ namespace pomerol2triqs {
     // block2_gf<Mesh, tensor_valued<4>> compute_g2(gf_struct_t const &gf_struct, gf_mesh<Mesh> const &mesh, block_order_t block_order,
     //                                              g2_blocks_t const &g2_blocks, Filler filler) const;
 
+    double DensityMatrixCutoff = 1e-15;
+
     public:
     /// Create a new solver object
     pomerol_ed(index_converter_t const &index_converter, bool verbose = false);
@@ -81,6 +83,9 @@ namespace pomerol2triqs {
 
     /// Save all eigenvalues and corresponding quantum numbers
     void saveEigenValues(const std::string &filename);
+
+    /// Set DensityMatrixCutoff (default: 1e-15, 0 = No cutoff). DensityMatrix will be recomputed.
+    void setDensityMatrixCutoff(const double DensityMatrixCutoff);
 
     /// Green's function in Matsubara frequencies
     block_gf<imfreq> G_iw(gf_struct_t const &gf_struct, double beta, int n_iw);
@@ -99,4 +104,9 @@ namespace pomerol2triqs {
     // TRIQS_WRAP_ARG_AS_DICT
     // block2_gf<w_l_lp_t, tensor_valued<4>> G2_iw_l_lp(g2_iw_l_lp_params_t const &p);
   };
+
+  inline void pomerol_ed::setDensityMatrixCutoff(const double DensityMatrixCutoff){
+    this->DensityMatrixCutoff = DensityMatrixCutoff;
+    rho.release();
+  }
 }

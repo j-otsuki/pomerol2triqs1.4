@@ -70,6 +70,9 @@ ed.diagonalize(H)
 ed.saveQuantumNumbers("quantum_numbers.dat")
 ed.saveEigenValues("eigenvalues.dat")
 
+# set DensityMatrixCutoff
+ed.setDensityMatrixCutoff(1e-10)
+
 # Compute G(i\omega)
 G_iw = ed.G_iw(gf_struct, beta, n_iw)
 
