@@ -12,8 +12,9 @@
 #include <triqs/hilbert_space/fundamental_operator_set.hpp>
 // #include <triqs/utility/optional_compat.hpp>
 #include <triqs/mpi/boost.hpp>
+#include <triqs/arrays.hpp>
 
-// #include "g2_parameters.hpp"
+#include "g2_parameters.hpp"
 
 namespace pomerol2triqs {
 
@@ -60,8 +61,9 @@ namespace pomerol2triqs {
     void compute_field_operators(gf_struct_t const &gf_struct);
     template <typename Mesh, typename Filler> block_gf<Mesh> compute_gf(gf_struct_t const &gf_struct, gf_mesh<Mesh> const &mesh, Filler filler) const;
 
-    using w_nu_nup_t = cartesian_product<imfreq, imfreq, imfreq>;
-    using w_l_lp_t   = cartesian_product<imfreq, legendre, legendre>;
+    // using w_nu_nup_t = cartesian_product<imfreq, imfreq, imfreq>;
+    // using w_l_lp_t   = cartesian_product<imfreq, legendre, legendre>;
+    using g2_t = array<std::complex<double>, 3>;
     // template <typename Mesh, typename Filler>
     // block2_gf<Mesh, tensor_valued<4>> compute_g2(gf_struct_t const &gf_struct, gf_mesh<Mesh> const &mesh, block_order_t block_order,
     //                                              g2_blocks_t const &g2_blocks, Filler filler) const;
@@ -95,6 +97,10 @@ namespace pomerol2triqs {
 
     /// Retarded Green's function on real energy axis
     block_gf<refreq> G_w(gf_struct_t const &gf_struct, double beta, std::pair<double, double> const &energy_window, int n_w, double im_shift = 0);
+
+    /// Two-particle Green's function, Matsubara frequencies
+    TRIQS_WRAP_ARG_AS_DICT
+    g2_t G2_iw(g2_iw_inu_inup_params_t const &p);
 
     /// Two-particle Green's function, Matsubara frequencies
     // TRIQS_WRAP_ARG_AS_DICT

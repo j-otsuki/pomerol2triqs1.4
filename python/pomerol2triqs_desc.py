@@ -14,6 +14,7 @@ module.add_include("pomerol_ed.hpp")
 
 # Add here anything to add in the C++ code at the start, e.g. namespace using
 module.add_preamble("""
+#include <triqs/python_tools/converters/arrays.hpp>
 #include <triqs/python_tools/converters/pair.hpp>
 #include <triqs/python_tools/converters/map.hpp>
 #include <triqs/python_tools/converters/set.hpp>
@@ -23,13 +24,14 @@ module.add_preamble("""
 #include <triqs/python_tools/converters/tuple.hpp>
 #include <triqs/python_tools/converters/operators_real_complex.hpp>
 #include <triqs/python_tools/converters/gf.hpp>
+#include "./pomerol2triqs_converters.hxx"
 """)
 module.add_using("namespace pomerol2triqs")
 module.add_using("namespace Pomerol")
 
 module.add_enum("spin",          ["down", "up"], "Pomerol", "Spin projection")
-# module.add_enum("block_order_t", ["AABB", "ABBA"], "pomerol2triqs", "G^{(2)} block order")
-# module.add_enum("channel_t",     ["PP", "PH", "AllFermionic"], "pomerol2triqs", "G^{(2)} channel")
+module.add_enum("block_order_t", ["AABB", "ABBA"], "pomerol2triqs", "G^{(2)} block order")
+module.add_enum("channel_t",     ["PP", "PH", "AllFermionic"], "pomerol2triqs", "G^{(2)} channel")
 
 # The class pomerol_ed
 c = class_(
@@ -64,6 +66,9 @@ c.add_method("""block_gf<imtime> G_tau (gf_struct_t gf_struct, double beta, int 
 
 c.add_method("""block_gf<refreq> G_w (gf_struct_t gf_struct, double beta, std::pair<double,double> energy_window, int n_w, double im_shift = 0)""",
              doc = """Retarded Green\'s function on real energy axis """)
+
+c.add_method("""array<std::complex<double>, 3> G2_iw (**pomerol2triqs::g2_iw_inu_inup_params_t)""",
+             doc = r"""Two-particle Green's function, Matsubara frequencies""")
 
 module.add_class(c)
 
