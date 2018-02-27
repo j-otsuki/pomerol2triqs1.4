@@ -25,7 +25,7 @@ orb_names = range(num_orb)
 # Number of Matsubara frequencies for GF calculation
 n_iw = 1024
 # Number of imaginary time slices for GF calculation
-n_tau = 10001
+n_tau = 2001
 
 # Energy window for real frequency GF calculation
 energy_window = (-5, 5)
@@ -33,13 +33,11 @@ energy_window = (-5, 5)
 n_w = 1000
 
 # Number of bosonic Matsubara frequencies for G^2 calculations
-g2_n_iw = 5
+g2_n_wb = 5
 # Number of fermionic Matsubara frequencies for G^2 calculations
-g2_n_inu = 10
+g2_n_wf = 10
 # Number of Legendre coefficients for G^2 calculations
-g2_n_l = 10
-# Block index combinations for G^2 calculations
-g2_blocks = set([("up", "up"), ("up", "dn"), ("dn", "up")])
+# g2_n_l = 10
 
 gf_struct = {"up" : orb_names, "dn" : orb_names}
 print "Block structure of single-particle Green's functions:", gf_struct
@@ -90,8 +88,8 @@ G_w = ed.G_w(gf_struct, beta, energy_window, n_w, 0.01)
 common_g2_params = {'channel' : "PH",
                     'gf_struct' : gf_struct,
                     'beta' : beta,
-                    'n_f' : 5,
-                    'n_b' : 1, }
+                    'n_f' : g2_n_wf,
+                    'n_b' : g2_n_wb, }
 
 ###############################
 # G^{(2)}(i\omega;i\nu,i\nu') #
@@ -107,24 +105,6 @@ print G2_iw.shape
 #                                            block_order = "AABB",
 #                                            n_inu = g2_n_inu,
 #                                            **common_g2_params)
-#
-# # Compute G^{(2),ph}(i\omega;i\nu,i\nu'), ABBA block order
-# G2_iw_inu_inup_ph_ABBA = ed.G2_iw_inu_inup(channel = "PH",
-#                                            block_order = "ABBA",
-#                                            n_inu = g2_n_inu,
-#                                            **common_g2_params)
-#
-# # Compute G^{(2),pp}(i\omega;i\nu,i\nu'), AABB block order
-# G2_iw_inu_inup_pp_AABB = ed.G2_iw_inu_inup(channel = "PP",
-#                                            block_order = "AABB",
-#                                            n_inu = g2_n_inu,
-#                                            **common_g2_params)
-#
-# # Compute G^{(2),pp}(i\omega;i\nu,i\nu'), ABBA block order
-# G2_iw_inu_inup_pp_ABBA = ed.G2_iw_inu_inup(channel = "PP",
-#                                            block_order = "ABBA",
-#                                            n_inu = g2_n_inu,
-#                                            **common_g2_params)
 
 #########################
 # G^{(2)}(i\omega;l,l') #
@@ -133,24 +113,6 @@ print G2_iw.shape
 # # Compute G^{(2),ph}(i\omega;l,l'), AABB block order
 # G2_iw_l_lp_ph_AABB = ed.G2_iw_l_lp(channel = "PH",
 #                                    block_order = "AABB",
-#                                    n_l = g2_n_l,
-#                                    **common_g2_params)
-#
-# # Compute G^{(2),ph}(i\omega;l,l'), ABBA block order
-# G2_iw_l_lp_ph_ABBA = ed.G2_iw_l_lp(channel = "PH",
-#                                    block_order = "ABBA",
-#                                    n_l = g2_n_l,
-#                                    **common_g2_params)
-#
-# # Compute G^{(2),pp}(i\omega;l,l'), AABB block order
-# G2_iw_l_lp_pp_AABB = ed.G2_iw_l_lp(channel = "PP",
-#                                    block_order = "AABB",
-#                                    n_l = g2_n_l,
-#                                    **common_g2_params)
-#
-# # Compute G^{(2),pp}(i\omega;l,l'), ABBA block order
-# G2_iw_l_lp_pp_ABBA = ed.G2_iw_l_lp(channel = "PP",
-#                                    block_order = "ABBA",
 #                                    n_l = g2_n_l,
 #                                    **common_g2_params)
 
@@ -163,11 +125,4 @@ if mpi.is_master_node():
         ar['G_iw'] = G_iw
         ar['G_tau'] = G_tau
         ar['G_w'] = G_w
-        # ar['G2_iw_inu_inup_ph_AABB'] = G2_iw_inu_inup_ph_AABB
-        # ar['G2_iw_inu_inup_ph_ABBA'] = G2_iw_inu_inup_ph_ABBA
-        # ar['G2_iw_inu_inup_pp_AABB'] = G2_iw_inu_inup_pp_AABB
-        # ar['G2_iw_inu_inup_pp_ABBA'] = G2_iw_inu_inup_pp_ABBA
-        # ar['G2_iw_l_lp_ph_AABB'] = G2_iw_l_lp_ph_AABB
-        # ar['G2_iw_l_lp_ph_ABBA'] = G2_iw_l_lp_ph_ABBA
-        # ar['G2_iw_l_lp_pp_AABB'] = G2_iw_l_lp_pp_AABB
-        # ar['G2_iw_l_lp_pp_ABBA'] = G2_iw_l_lp_pp_ABBA
+        ar['G2_ph'] = G2_iw
