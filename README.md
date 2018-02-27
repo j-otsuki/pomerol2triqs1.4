@@ -1,7 +1,8 @@
-pomerol2triqs
-=============
+pomerol2triqs1.4
+================
 
-Quick and dirty TRIQS wrapper around the Pomerol exact diagonalization library
+TRIQS wrapper around the Pomerol exact diagonalization library.  
+Backport of [krivenko/pomerol2triqs](https://github.com/krivenko/pomerol2triqs) to TRIQS ver1.4.
 
 To learn how to use this wrapper, see `example` subdir in the source directory.
 
@@ -19,17 +20,18 @@ Installation
 ------------
 
 - Install the latest version of [Pomerol](http://aeantipov.github.io/pomerol/) exact diagonalization library (`master` branch).
-- Install the latest version of [TRIQS](https://triqs.ipht.cnrs.fr/1.x/install.html) library (**`unstable`** branch).
-- `git clone https://github.com/krivenko/pomerol2triqs.git pomerol2triqs.git`
-- `mkdir pomerol2triqs.build && cd pomerol2triqs.build`
-- `cmake ../pomerol2triqs.git -DCMAKE_BUILD_TYPE=Release -DTRIQS_PATH=<path_to_triqs_install_dir> -DPOMEROL_PATH=<path_to_pomerol_install_dir>`
+- Install the latest version of [TRIQS](https://triqs.ipht.cnrs.fr/1.x/install.html) library (**`master`** branch).
+- `git clone https://github.com/j-otsuki/pomerol2triqs1.4.git`
+- `mkdir pomerol2triqs1.4.build && cd pomerol2triqs1.4.build`
+- `cmake ../pomerol2triqs1.4 -DCMAKE_BUILD_TYPE=Release -DTRIQS_PATH=<path_to_triqs_install_dir> -DPOMEROL_PATH=<path_to_pomerol_install_dir>`
 - `make`
 - `make install`
 
 License
 -------
 
-Copyright (C) 2017 Igor Krivenko
+Copyright (C) 2017 Igor Krivenko  
+Copyright (C) 2018 Junya Otsuki
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
