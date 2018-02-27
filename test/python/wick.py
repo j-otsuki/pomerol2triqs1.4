@@ -18,9 +18,12 @@ e_d = 0.1               # Local level
 h = 0.15                # Magnetic field
 
 # Levels of the bath sites
-epsilon = [-1.0, 1.0]
+# epsilon = [-1.0, 1.0]
+epsilon = [-1.0, 1.2]
+
 # Hopping amplitudes
-V = [0.5, 0.5]
+# V = [0.5, 0.5]
+V = [0.5, 0.6]
 
 spin_names = ("up", "dn")
 
@@ -28,11 +31,10 @@ spin_names = ("up", "dn")
 n_iw = 200
 
 # Number of bosonic Matsubara frequencies for G^2 calculations
-
-g2_n_iw = 5
+g2_n_wb = 5
 
 # Number of fermionic Matsubara frequencies for G^2 calculations
-g2_n_inu = 5
+g2_n_wf = 5
 
 # GF structure
 gf_struct = {'up' : [0], 'dn' : [0]}
@@ -73,76 +75,52 @@ G_iw = ed.G_iw(gf_struct, beta, n_iw)
 # G^{(2)} #
 ###########
 
-common_g2_params = {'gf_struct' : gf_struct,
+common_g2_params = {'channel' : "PH",
+                    'gf_struct' : gf_struct,
                     'beta' : beta,
-                    'n_iw' : g2_n_iw}
+                    'n_f' : g2_n_wf,
+                    'n_b' : g2_n_wb, }
 
-# Compute G^{(2),ph}(i\omega;i\nu,i\nu'), AABB block order
-G2_iw_inu_inup_ph_AABB = ed.G2_iw_inu_inup(channel = "PH",
-                                           block_order = "AABB",
-                                           n_inu = g2_n_inu,
-                                           **common_g2_params)
+G2_ph_uuuu = ed.G2_iw( index1=('up',0), index2=('up',0), index3=('up',0), index4=('up',0), **common_g2_params )
+G2_ph_dddd = ed.G2_iw( index1=('dn',0), index2=('dn',0), index3=('dn',0), index4=('dn',0), **common_g2_params )
+G2_ph_uudd = ed.G2_iw( index1=('up',0), index2=('up',0), index3=('dn',0), index4=('dn',0), **common_g2_params )
+G2_ph_dduu = ed.G2_iw( index1=('dn',0), index2=('dn',0), index3=('up',0), index4=('up',0), **common_g2_params )
+G2_ph_uddu = ed.G2_iw( index1=('up',0), index2=('dn',0), index3=('dn',0), index4=('up',0), **common_g2_params )
+G2_ph_duud = ed.G2_iw( index1=('dn',0), index2=('up',0), index3=('up',0), index4=('dn',0), **common_g2_params )
 
-# Compute G^{(2),ph}(i\omega;i\nu,i\nu'), ABBA block order
-G2_iw_inu_inup_ph_ABBA = ed.G2_iw_inu_inup(channel = "PH",
-                                           block_order = "ABBA",
-                                           n_inu = g2_n_inu,
-                                           **common_g2_params)
-
-# Compute G^{(2),pp}(i\omega;i\nu,i\nu'), AABB block order
-G2_iw_inu_inup_pp_AABB = ed.G2_iw_inu_inup(channel = "PP",
-                                           block_order = "AABB",
-                                           n_inu = g2_n_inu,
-                                           **common_g2_params)
-
-# Compute G^{(2),pp}(i\omega;i\nu,i\nu'), ABBA block order
-G2_iw_inu_inup_pp_ABBA = ed.G2_iw_inu_inup(channel = "PP",
-                                           block_order = "ABBA",
-                                           n_inu = g2_n_inu,
-                                           **common_g2_params)
-
-b_mesh = MeshImFreq(beta = beta, S = 'Boson', n_max = g2_n_iw)
-f_mesh = MeshImFreq(beta = beta, S = 'Fermion', n_max = g2_n_inu)
-g2_mesh = MeshProduct(b_mesh, f_mesh, f_mesh)
-
-# Check meshes of G2 containers
-for bn1, bn2 in product(spin_names, spin_names):
-    assert G2_iw_inu_inup_ph_AABB[bn1, bn2].mesh == g2_mesh
-    assert G2_iw_inu_inup_ph_ABBA[bn1, bn2].mesh == g2_mesh
-    assert G2_iw_inu_inup_pp_AABB[bn1, bn2].mesh == g2_mesh
-    assert G2_iw_inu_inup_pp_ABBA[bn1, bn2].mesh == g2_mesh
-
-G2_iw_inu_inup_ph_AABB_wick = G2_iw_inu_inup_ph_AABB.copy()
-G2_iw_inu_inup_ph_ABBA_wick = G2_iw_inu_inup_ph_AABB.copy()
-G2_iw_inu_inup_pp_AABB_wick = G2_iw_inu_inup_ph_AABB.copy()
-G2_iw_inu_inup_pp_ABBA_wick = G2_iw_inu_inup_ph_AABB.copy()
+G2_ph_uuuu_wick = G2_ph_uuuu.copy()
+G2_ph_dddd_wick = G2_ph_dddd.copy()
+G2_ph_uudd_wick = G2_ph_uudd.copy()
+G2_ph_dduu_wick = G2_ph_dduu.copy()
+G2_ph_uddu_wick = G2_ph_uddu.copy()
+G2_ph_duud_wick = G2_ph_duud.copy()
 
 G = lambda s, i: G_iw[s].data[i + n_iw, 0, 0]
 
-g2_mesh_enum = product(enumerate(b_mesh), enumerate(f_mesh), enumerate(f_mesh))
-for (m, w), (i, nu), (ip, nup) in g2_mesh_enum:
-    m -= g2_n_iw - 1
-    i -= g2_n_inu
-    ip -= g2_n_inu
-    d_w_0 = int(m == 0)
-    d_w_nu_nup = int(m == i + ip + 1)
-    d_nu_nup = int(i == ip)
+for (i, j1, j2) in product(range(g2_n_wb),range(2*g2_n_wf),range(2*g2_n_wf)):
+    wb = i
+    wf1 = j1 - g2_n_wf
+    wf2 = j2 - g2_n_wf
+    d_w_0 = int(wb == 0)
+    # d_w_nu_nup = int(m == i + ip + 1)
+    d_nu_nup = int(j1 == j2)
+
+    G2_ph_uudd_wick[i,j1,j2] = beta * d_w_0 * G("up", wf1) * G("dn", wf2)
+    G2_ph_dduu_wick[i,j1,j2] = beta * d_w_0 * G("dn", wf1) * G("up", wf2)
+
+    G2_ph_uuuu_wick[i,j1,j2] = beta * d_w_0 * G("up", wf1) * G("up", wf2) - beta * d_nu_nup * G("up", wf1+wb) * G("up", wf1)
+    G2_ph_dddd_wick[i,j1,j2] = beta * d_w_0 * G("dn", wf1) * G("dn", wf2) - beta * d_nu_nup * G("dn", wf1+wb) * G("dn", wf1)
+
+    G2_ph_uddu_wick[i,j1,j2] =                                            - beta * d_nu_nup * G("dn", wf1+wb) * G("up", wf1)
+    G2_ph_duud_wick[i,j1,j2] =                                            - beta * d_nu_nup * G("up", wf1+wb) * G("dn", wf1)
 
 
-    for s1, s2 in product(spin_names, spin_names):
-        d_s1_s2 = int(s1 == s2)
+# assert_gfs_are_close(G2_ph_uddu_wick, G2_ph_uddu)
+gfs_are_close = lambda g1, g2: np.sum(g1-g2) < 1e-7
 
-        G2_iw_inu_inup_ph_AABB_wick[s1, s2].data[m + (g2_n_iw - 1), i + g2_n_inu, ip + g2_n_inu] = \
-            beta * d_w_0 * G(s1, i) * G(s2, ip) - beta * d_nu_nup * d_s1_s2 * G(s1, m + i) * G(s2, i)
-        G2_iw_inu_inup_ph_ABBA_wick[s1, s2].data[m + (g2_n_iw - 1), i + g2_n_inu, ip + g2_n_inu] = \
-            beta * d_w_0 * d_s1_s2 * G(s1, i) * G(s2, ip) - beta * d_nu_nup * G(s2, m + i) * G(s1, i)
-        G2_iw_inu_inup_pp_AABB_wick[s1, s2].data[m + (g2_n_iw - 1), i + g2_n_inu, ip + g2_n_inu] = \
-            beta * d_w_nu_nup * G(s1, i) * G(s2, ip) - beta * d_nu_nup * d_s1_s2 * G(s1, m - i - 1) * G(s2, i)
-        G2_iw_inu_inup_pp_ABBA_wick[s1, s2].data[m + (g2_n_iw - 1), i + g2_n_inu, ip + g2_n_inu] = \
-            beta * d_w_nu_nup * d_s1_s2 * G(s1, i) * G(s2, ip) - beta * d_nu_nup * G(s2, m - i - 1) * G(s1, i)
-
-for s1, s2 in product(spin_names, spin_names):
-    assert_gfs_are_close(G2_iw_inu_inup_ph_AABB_wick[s1, s2], G2_iw_inu_inup_ph_AABB[s1, s2])
-    assert_gfs_are_close(G2_iw_inu_inup_ph_ABBA_wick[s1, s2], G2_iw_inu_inup_ph_ABBA[s1, s2])
-    assert_gfs_are_close(G2_iw_inu_inup_pp_AABB_wick[s1, s2], G2_iw_inu_inup_pp_AABB[s1, s2])
-    assert_gfs_are_close(G2_iw_inu_inup_pp_ABBA_wick[s1, s2], G2_iw_inu_inup_pp_ABBA[s1, s2])
+assert( gfs_are_close(G2_ph_uuuu_wick, G2_ph_uuuu) )
+assert( gfs_are_close(G2_ph_dddd_wick, G2_ph_dddd) )
+assert( gfs_are_close(G2_ph_uudd_wick, G2_ph_uudd) )
+assert( gfs_are_close(G2_ph_dduu_wick, G2_ph_dduu) )
+assert( gfs_are_close(G2_ph_uddu_wick, G2_ph_uddu) )
+assert( gfs_are_close(G2_ph_duud_wick, G2_ph_duud) )
