@@ -115,8 +115,16 @@ for (i, j1, j2) in product(range(g2_n_wb),range(2*g2_n_wf),range(2*g2_n_wf)):
     G2_ph_duud_wick[i,j1,j2] =                                            - beta * d_nu_nup * G("up", wf1+wb) * G("dn", wf1)
 
 
-# assert_gfs_are_close(G2_ph_uddu_wick, G2_ph_uddu)
-gfs_are_close = lambda g1, g2: np.sum(g1-g2) < 1e-7
+diff = lambda g1, g2: np.linalg.norm(g1-g2)/g1.size  # mean squared error
+# diff = lambda g1, g2: np.linalg.norm(g1-g2, ord=np.inf)  # max(|x|)
+gfs_are_close = lambda g1, g2: diff(g1,g2) < 1e-8
+
+print diff(G2_ph_uuuu_wick,G2_ph_uuuu)
+print diff(G2_ph_dddd_wick,G2_ph_dddd)
+print diff(G2_ph_uudd_wick,G2_ph_uudd)
+print diff(G2_ph_dduu_wick,G2_ph_dduu)
+print diff(G2_ph_uddu_wick,G2_ph_uddu)
+print diff(G2_ph_duud_wick,G2_ph_duud)
 
 assert( gfs_are_close(G2_ph_uuuu_wick, G2_ph_uuuu) )
 assert( gfs_are_close(G2_ph_dddd_wick, G2_ph_dddd) )

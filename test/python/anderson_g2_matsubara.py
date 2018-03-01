@@ -25,11 +25,9 @@ V = [0.5, 0.5]
 spin_names = ("up", "dn")
 
 # Number of bosonic Matsubara frequencies for G^2 calculations
-g2_n_iw = 5
+g2_n_wb = 5
 # Number of fermionic Matsubara frequencies for G^2 calculations
-g2_n_inu = 5
-# Block index combinations for G^2 calculations
-g2_blocks = set([("up", "up"), ("dn", "dn"), ("up", "dn")])
+g2_n_wf = 5
 
 # GF structure
 gf_struct = {'up' : [0], 'dn' : [0]}
@@ -67,48 +65,54 @@ ed.diagonalize(H)
 # G^{(2)} #
 ###########
 
-common_g2_params = {'gf_struct' : gf_struct,
+common_g2_params = {'channel' : "PH",
+                    'gf_struct' : gf_struct,
                     'beta' : beta,
-                    'blocks' : g2_blocks,
-                    'n_iw' : g2_n_iw}
+                    'n_f' : g2_n_wf,
+                    'n_b' : g2_n_wb, }
+
 
 # Compute G^{(2),ph}(i\omega;i\nu,i\nu'), AABB block order
-G2_iw_inu_inup_ph_AABB = ed.G2_iw_inu_inup(channel = "PH",
-                                           block_order = "AABB",
-                                           n_inu = g2_n_inu,
-                                           **common_g2_params)
+G2_iw_ph_uuuu = ed.G2_iw( index1=('up',0), index2=('up',0), index3=('up',0), index4=('up',0), **common_g2_params )
+G2_iw_ph_dddd = ed.G2_iw( index1=('dn',0), index2=('dn',0), index3=('dn',0), index4=('dn',0), **common_g2_params )
+G2_iw_ph_uudd = ed.G2_iw( index1=('up',0), index2=('up',0), index3=('dn',0), index4=('dn',0), **common_g2_params )
+G2_iw_ph_dduu = ed.G2_iw( index1=('dn',0), index2=('dn',0), index3=('up',0), index4=('up',0), **common_g2_params )
 
 # Compute G^{(2),ph}(i\omega;i\nu,i\nu'), ABBA block order
-G2_iw_inu_inup_ph_ABBA = ed.G2_iw_inu_inup(channel = "PH",
-                                           block_order = "ABBA",
-                                           n_inu = g2_n_inu,
-                                           **common_g2_params)
+G2_iw_ph_uddu = ed.G2_iw( index1=('up',0), index2=('dn',0), index3=('dn',0), index4=('up',0), **common_g2_params )
+G2_iw_ph_duud = ed.G2_iw( index1=('dn',0), index2=('up',0), index3=('up',0), index4=('dn',0), **common_g2_params )
 
 # Compute G^{(2),pp}(i\omega;i\nu,i\nu'), AABB block order
-G2_iw_inu_inup_pp_AABB = ed.G2_iw_inu_inup(channel = "PP",
-                                           block_order = "AABB",
-                                           n_inu = g2_n_inu,
-                                           **common_g2_params)
+# G2_iw_inu_inup_pp_AABB = ed.G2_iw_inu_inup(channel = "PP",
+#                                            block_order = "AABB",
+#                                            n_inu = g2_n_inu,
+#                                            **common_g2_params)
 
 # Compute G^{(2),pp}(i\omega;i\nu,i\nu'), ABBA block order
-G2_iw_inu_inup_pp_ABBA = ed.G2_iw_inu_inup(channel = "PP",
-                                           block_order = "ABBA",
-                                           n_inu = g2_n_inu,
-                                           **common_g2_params)
+# G2_iw_inu_inup_pp_ABBA = ed.G2_iw_inu_inup(channel = "PP",
+#                                            block_order = "ABBA",
+#                                            n_inu = g2_n_inu,
+#                                            **common_g2_params)
+
+diff = lambda g1, g2: np.linalg.norm(g1-g2)/g1.size  # mean squared error
+# diff = lambda g1, g2: np.linalg.norm(g1-g2, ord=np.inf)  # max(|x|)
+gfs_are_close = lambda g1, g2: diff(g1,g2) < 1e-8
 
 if mpi.is_master_node():
     with HDFArchive('anderson_g2_matsubara_np%i.out.h5' % mpi.size, 'w') as ar:
         ar['H'] = H
-        ar['G2_iw_inu_inup_ph_AABB'] = G2_iw_inu_inup_ph_AABB
-        ar['G2_iw_inu_inup_ph_ABBA'] = G2_iw_inu_inup_ph_ABBA
-        ar['G2_iw_inu_inup_pp_AABB'] = G2_iw_inu_inup_pp_AABB
-        ar['G2_iw_inu_inup_pp_ABBA'] = G2_iw_inu_inup_pp_ABBA
+        ar['G2_iw_ph_uuuu'] = G2_iw_ph_uuuu
+        ar['G2_iw_ph_dddd'] = G2_iw_ph_dddd
+        ar['G2_iw_ph_uudd'] = G2_iw_ph_uudd
+        ar['G2_iw_ph_dduu'] = G2_iw_ph_dduu
+        ar['G2_iw_ph_uddu'] = G2_iw_ph_uddu
+        ar['G2_iw_ph_duud'] = G2_iw_ph_duud
 
     with HDFArchive("anderson_g2_matsubara.ref.h5", 'r') as ar:
         assert (ar['H'] - H).is_zero()
-        for bn1, bn2 in g2_blocks:
-            assert_gfs_are_close(ar['G2_iw_inu_inup_ph_AABB'][bn1, bn2], G2_iw_inu_inup_ph_AABB[bn1, bn2])
-            assert_gfs_are_close(ar['G2_iw_inu_inup_ph_ABBA'][bn1, bn2], G2_iw_inu_inup_ph_ABBA[bn1, bn2])
-            assert_gfs_are_close(ar['G2_iw_inu_inup_pp_AABB'][bn1, bn2], G2_iw_inu_inup_pp_AABB[bn1, bn2])
-            assert_gfs_are_close(ar['G2_iw_inu_inup_pp_ABBA'][bn1, bn2], G2_iw_inu_inup_pp_ABBA[bn1, bn2])
-
+        assert ( gfs_are_close(ar['G2_iw_ph_uuuu'], G2_iw_ph_uuuu) )
+        assert ( gfs_are_close(ar['G2_iw_ph_dddd'], G2_iw_ph_dddd) )
+        assert ( gfs_are_close(ar['G2_iw_ph_uudd'], G2_iw_ph_uudd) )
+        assert ( gfs_are_close(ar['G2_iw_ph_dduu'], G2_iw_ph_dduu) )
+        assert ( gfs_are_close(ar['G2_iw_ph_uddu'], G2_iw_ph_uddu) )
+        assert ( gfs_are_close(ar['G2_iw_ph_duud'], G2_iw_ph_duud) )
