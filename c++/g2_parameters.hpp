@@ -13,7 +13,7 @@ namespace pomerol2triqs {
 
   struct g2_iw_inu_inup_params_t {
 
-    /// Structure of G^2 blocks.
+    /// Block structure of GF
     gf_struct_t gf_struct;
 
     /// Inverse temperature
