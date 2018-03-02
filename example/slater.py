@@ -4,8 +4,9 @@ from pytriqs.operators import *
 from pytriqs.operators.util.op_struct import set_operator_structure, get_mkind
 from pytriqs.operators.util.U_matrix import U_matrix
 from pytriqs.operators.util.hamiltonians import h_int_slater
-from pytriqs.operators.util.observables import N_op, S_op, L_op, LS_op
+from pytriqs.operators.util.observables import N_op, S_op, L_op
 from pytriqs.applications.impurity_solvers.pomerol2triqs import PomerolED
+from pytriqs.applications.impurity_solvers.pomerol2triqs.triqs_operators import ls_op
 from pytriqs.utility import mpi
 from itertools import product
 
@@ -72,7 +73,7 @@ Lz = L_op('z', spin_names, orb_names, off_diag=off_diag, basis = 'spherical')
 Jz = Sz + Lz
 
 # LS coupling term
-LS = LS_op(spin_names, orb_names, off_diag=off_diag, basis = 'spherical')
+LS = ls_op(spin_names, orb_names, off_diag=off_diag, basis = 'spherical')
 
 # Hamiltonian
 # U_mat = U_matrix(L, radial_integrals = [F0,F2,F4], basis='spherical')
