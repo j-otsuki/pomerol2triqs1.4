@@ -112,11 +112,11 @@ else:
 # ed.diagonalize(H, [N,])  # only N
 
 # save data
-ed.saveQuantumNumbers("quantum_numbers.dat")
-ed.saveEigenValues("eigenvalues.dat")
+ed.save_quantum_numbers("quantum_numbers.dat")
+ed.save_eigenvalues("eigenvalues.dat")
 
-# set DensityMatrixCutoff
-ed.setDensityMatrixCutoff(1e-10)
+# set density-matrix cutoff
+ed.set_density_matrix_cutoff(1e-10)
 
 # Compute G(i\omega)
 G_iw = ed.G_iw(gf_struct, beta, n_iw)

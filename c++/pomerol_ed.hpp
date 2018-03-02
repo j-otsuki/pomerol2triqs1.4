@@ -87,7 +87,7 @@ namespace pomerol2triqs {
     // block2_gf<Mesh, tensor_valued<4>> compute_g2(gf_struct_t const &gf_struct, gf_mesh<Mesh> const &mesh, block_order_t block_order,
     //                                              g2_blocks_t const &g2_blocks, Filler filler) const;
 
-    double DensityMatrixCutoff = 1e-15;
+    double density_matrix_cutoff = 1e-15;
 
     public:
     /// Create a new solver object
@@ -100,13 +100,13 @@ namespace pomerol2triqs {
     void diagonalize(many_body_op_t const &hamiltonian, std::vector<many_body_op_t> const& integrals_of_motion);
 
     /// Save quantum numbers and block size
-    void saveQuantumNumbers(const std::string &filename);
+    void save_quantum_numbers(const std::string &filename);
 
     /// Save all eigenvalues and corresponding quantum numbers
-    void saveEigenValues(const std::string &filename);
+    void save_eigenvalues(const std::string &filename);
 
-    /// Set DensityMatrixCutoff (default: 1e-15, 0 = No cutoff). DensityMatrix will be recomputed.
-    void setDensityMatrixCutoff(const double DensityMatrixCutoff);
+    /// Set density-matrix cutoff (default: 1e-15, 0 = No cutoff). Density matrix will be recomputed.
+    void set_density_matrix_cutoff(const double cutoff);
 
     /// Green's function in Matsubara frequencies
     block_gf<imfreq> G_iw(gf_struct_t const &gf_struct, double beta, int n_iw);
@@ -130,8 +130,8 @@ namespace pomerol2triqs {
     // block2_gf<w_l_lp_t, tensor_valued<4>> G2_iw_l_lp(g2_iw_l_lp_params_t const &p);
   };
 
-  inline void pomerol_ed::setDensityMatrixCutoff(const double DensityMatrixCutoff){
-    this->DensityMatrixCutoff = DensityMatrixCutoff;
+  inline void pomerol_ed::set_density_matrix_cutoff(const double cutoff){
+    this->density_matrix_cutoff = cutoff;
     rho.release();
   }
 }

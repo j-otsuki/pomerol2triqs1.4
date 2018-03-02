@@ -49,23 +49,23 @@ c.add_method("""void diagonalize (many_body_op_t hamiltonian, bool ignore_symmet
 c.add_method("""void diagonalize (many_body_op_t hamiltonian, std::vector<many_body_op_t> integrals_of_motion)""",
              doc = """Diagonalize Hamiltonian using provided integrals of motion """)
 
-c.add_method("""void saveQuantumNumbers (std::string filename)""",
+c.add_method("""void save_quantum_numbers (std::string filename)""",
              doc = """Save quantum numbers and block size """)
 
-c.add_method("""void saveEigenValues (std::string filename)""",
+c.add_method("""void save_eigenvalues (std::string filename)""",
              doc = """Save all eigenvalues and corresponding quantum numbers """)
 
-c.add_method("""void setDensityMatrixCutoff (double DensityMatrixCutoff)""",
-             doc = """Set DensityMatrixCutoff (default: 1e-15, 0 = No cutoff). DensityMatrix will be recomputed. """)
+c.add_method("""void set_density_matrix_cutoff (double cutoff)""",
+             doc = r"""Set density-matrix cutoff (default: 1e-15, 0 = No cutoff). Density matrix will be recomputed.""")
 
 c.add_method("""block_gf<imfreq> G_iw (gf_struct_t gf_struct, double beta, int n_iw)""",
-             doc = """Green\'s function in Matsubara frequencies """)
+             doc = r"""Green's function in Matsubara frequencies""")
 
 c.add_method("""block_gf<imtime> G_tau (gf_struct_t gf_struct, double beta, int n_tau)""",
-             doc = """Green\'s function in imaginary time """)
+             doc = r"""Green's function in imaginary time""")
 
 c.add_method("""block_gf<refreq> G_w (gf_struct_t gf_struct, double beta, std::pair<double,double> energy_window, int n_w, double im_shift = 0)""",
-             doc = """Retarded Green\'s function on real energy axis """)
+             doc = r"""Retarded Green's function on real energy axis""")
 
 c.add_method("""array<std::complex<double>, 3> G2_iw (**pomerol2triqs::g2_iw_inu_inup_params_t)""",
              doc = r"""Two-particle Green's function, Matsubara frequencies""")

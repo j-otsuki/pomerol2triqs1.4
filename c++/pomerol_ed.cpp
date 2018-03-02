@@ -209,8 +209,8 @@ namespace pomerol2triqs {
     diagonalize_main(gs_shift);
   }
 
-  void pomerol_ed::saveQuantumNumbers(const std::string &filename) {
-    if (!states_class) TRIQS_RUNTIME_ERROR << "saveQuantumNumbers: internal error!";
+  void pomerol_ed::save_quantum_numbers(const std::string &filename) {
+    if (!states_class) TRIQS_RUNTIME_ERROR << "save_quantum_numbers: internal error!";
 
     if (!comm.rank()) {
       std::ofstream fout(filename);
@@ -222,8 +222,8 @@ namespace pomerol2triqs {
     }
   }
 
-  void pomerol_ed::saveEigenValues(const std::string &filename) {
-    if (!states_class || !matrix_h) TRIQS_RUNTIME_ERROR << "saveEigenValues: internal error!";
+  void pomerol_ed::save_eigenvalues(const std::string &filename) {
+    if (!states_class || !matrix_h) TRIQS_RUNTIME_ERROR << "save_eigenvalues: internal error!";
 
     if (!comm.rank()) {
       // create a list of pairs of eigenvalue and quantum numers to sort
@@ -277,7 +277,7 @@ namespace pomerol2triqs {
       rho.reset(new Pomerol::DensityMatrix(*states_class, *matrix_h, beta));
       rho->prepare();
       rho->compute();
-      rho->truncateBlocks(DensityMatrixCutoff, verbose);
+      rho->truncateBlocks(density_matrix_cutoff, verbose);
     }
   }
 
