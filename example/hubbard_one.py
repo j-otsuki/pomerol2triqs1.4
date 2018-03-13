@@ -1,7 +1,7 @@
 from pytriqs.applications.impurity_solvers.pomerol2triqs.hubbard_one_solver import Solver
 
 from pytriqs.archive import HDFArchive
-from pytriqs.gf import *
+from pytriqs.gf.local import *
 from pytriqs.operators import *
 from pytriqs.operators.util.op_struct import set_operator_structure, get_mkind
 from pytriqs.operators.util.U_matrix import U_matrix
@@ -107,9 +107,9 @@ const_of_motion = [N, Sz, Lz]
 # Pomerol ED solver #
 #####################
 
-S = Solver(beta, gf_struct, spin_orbit=False, verbose=True)
+S = Solver(beta, gf_struct, n_iw, spin_orbit=False, verbose=True)
 
-S.solve(H_int, E_levels, n_iw, const_of_motion=const_of_motion, file_quantum_numbers="quantum_numbers.dat", file_eigenvalues="eigenvalues.dat")
+S.solve(H_int, E_levels, const_of_motion=const_of_motion, file_quantum_numbers="quantum_numbers.dat", file_eigenvalues="eigenvalues.dat")
 
 if mpi.is_master_node():
     with HDFArchive('hubbard_one.out.h5', 'w') as ar:

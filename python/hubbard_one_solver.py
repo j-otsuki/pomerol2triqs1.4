@@ -8,7 +8,7 @@ import numpy as np
 from itertools import product
 
 class Solver:
-    def __init__(self, beta, gf_struct, spin_orbit=False, verbose=True):
+    def __init__(self, beta, gf_struct, n_iw, spin_orbit=False, verbose=True):
 
         # TODO: spin_orbit
         if spin_orbit:
@@ -16,11 +16,13 @@ class Solver:
 
         self.beta = beta
         self.gf_struct = gf_struct
+        self.n_iw = n_iw
         self.verbose = verbose
 
         if self.verbose and mpi.is_master_node():
             print "\n*** Hubbard I solver using Pomerol library"
             print "*** gf_struct =", gf_struct
+            print "*** n_iw =", n_iw
 
         # get spin_name and orb_names from gf_struct
         self.__analyze_gf_struct(gf_struct)
@@ -37,15 +39,20 @@ class Solver:
 
         self.__ed = PomerolED(index_converter, verbose)
 
-    def solve(self, H_int, E_levels, n_iw, const_of_motion=None, density_matrix_cutoff=1e-10, file_quantum_numbers="", file_eigenvalues=""):
+        # init G_iw
+        glist = lambda : [ GfImFreq(indices=self.orb_names, beta=beta, n_points=n_iw) for block, inner in gf_struct.items() ]
+        self.G_iw = BlockGf(name_list=self.spin_names, block_list=glist(), make_copies=False)
+        self.G_iw.zero()
+        self.G0_iw = self.G_iw.copy()
+        self.Sigma_iw = self.G_iw.copy()
 
-        self.n_iw = n_iw
+    def solve(self, H_int, E_levels, const_of_motion=None, density_matrix_cutoff=1e-10, file_quantum_numbers="", file_eigenvalues=""):
+
         self.__copy_E_levels(E_levels)
 
         H_0 = sum( self.E_levels[sn][o1,o2].real*c_dag(sn,o1)*c(sn,o2) for sn, o1, o2 in product(self.spin_names, self.orb_names, self.orb_names))
         if self.verbose and mpi.is_master_node():
             print "\n*** compute G_iw and Sigma_iw"
-            print "*** n_iw =", n_iw
             print "*** E_levels =", E_levels
             print "*** H_0 =", H_0
             print "*** const_of_motion =", const_of_motion
@@ -65,17 +72,13 @@ class Solver:
         self.__ed.set_density_matrix_cutoff(density_matrix_cutoff)
 
         # Compute G(i\omega)
-        self.G_iw = self.__ed.G_iw(self.gf_struct, self.beta, self.n_iw)
-        # print type(self.G_iw)
+        self.G_iw << self.__ed.G_iw(self.gf_struct, self.beta, self.n_iw)
 
         # Compute G0 and Sigma
-        self.G0_iw = self.G_iw.copy()
-        self.Sigma_iw = self.G_iw.copy()
-
         E_list = [ self.E_levels[sn] for sn in self.spin_names ]  # from dict to list
-        self.G0_iw <<= iOmega_n
+        self.G0_iw << iOmega_n
         self.G0_iw -= E_list
-        self.Sigma_iw <<= self.G0_iw - inverse(self.G_iw)
+        self.Sigma_iw << self.G0_iw - inverse(self.G_iw)
         self.G0_iw.invert()
 
     def __copy_E_levels(self, E_levels):
