@@ -32,7 +32,7 @@ class Solver:
         off_diag = True
         mkind = get_mkind(off_diag, None)
         # Conversion from TRIQS to Pomerol notation for operator indices
-        index_converter = {mkind(sn, bn) : ("atom", bi, "down" if sn == "dn" else "up")
+        index_converter = {mkind(sn, bn) : ("atom", bi, "down" if sn == "dn" else sn)
                            for sn, (bi, bn) in product(self.spin_names, enumerate(self.orb_names))}
 
         self.__ed = PomerolED(index_converter, verbose)
