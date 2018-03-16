@@ -17,6 +17,7 @@ class Solver:
         self.beta = beta
         self.gf_struct = gf_struct
         self.n_iw = n_iw
+        self.spin_orbit = spin_orbit
         self.verbose = verbose
 
         if self.verbose and mpi.is_master_node():
@@ -80,6 +81,14 @@ class Solver:
         self.G0_iw -= E_list
         self.Sigma_iw << self.G0_iw - inverse(self.G_iw)
         self.G0_iw.invert()
+
+        # *********************************************************************
+        # TODO: tail
+        # set tail of Sigma at all zero in the meantime, because tail of G is
+        #  not computed in pomerol solver. This part should be improved.
+        # *********************************************************************
+        for s, sig in self.Sigma_iw:
+            sig.tail.zero()
 
     def __copy_E_levels(self, E_levels):
         """Copy E_levels after checking the data structure"""
