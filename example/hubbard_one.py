@@ -52,7 +52,7 @@ g2_n_wf = 10
 # Input for Pomerol #
 #####################
 
-spin_names = ("up", "dn")
+spin_names = ("up", "down")
 orb_names = range(-L, L+1)
 
 # GF structure
