@@ -53,15 +53,22 @@ class Solver:
 
         self.__copy_E_levels(E_levels)
 
-        H_0 = sum( self.E_levels[sn][oi1,oi2].real*c_dag(sn,on1)*c(sn,on2) for sn, (oi1,on1), (oi2,on2) in product(self.spin_names, enumerate(self.orb_names), enumerate(self.orb_names)))
+        H_0 = sum( self.E_levels[sn][oi1,oi2].real*c_dag(sn,on1)*c(sn,on2) for sn, (oi1,on1), (oi2,on2) in product(self.spin_names, enumerate(self.orb_names), enumerate(self.orb_names)) )
         if self.verbose and mpi.is_master_node():
             print "\n*** compute G_iw and Sigma_iw"
             print "*** E_levels =", E_levels
             print "*** H_0 =", H_0
             print "*** const_of_motion =", const_of_motion
 
+        N_op = sum( c_dag(sn,on)*c(sn,on) for sn, on in product(self.spin_names, self.orb_names) )
+
         if const_of_motion is None:
-            self.__ed.diagonalize(H_0+H_int)
+            if self.spin_orbit:
+                # use only N op as integrals_of_motion when spin-orbit coupling is included
+                self.__ed.diagonalize(H_0+H_int, integrals_of_motion=[N_op])
+            else:
+                # use N and S_z as integrals of motion by default
+                self.__ed.diagonalize(H_0+H_int)
         else:
             self.__ed.diagonalize(H_0+H_int, const_of_motion)
 
