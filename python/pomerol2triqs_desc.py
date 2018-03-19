@@ -40,7 +40,7 @@ c = class_(
         doc = r"",   # doc of the C++ class
 )
 
-c.add_constructor("""(index_converter_t index_converter, bool verbose = false)""",
+c.add_constructor("""(index_converter_t index_converter, bool verbose = false, bool spin_orbit = false)""",
                   doc = """Create a new solver object """)
 
 c.add_method("""void diagonalize (many_body_op_t hamiltonian, bool ignore_symmetries = false)""",

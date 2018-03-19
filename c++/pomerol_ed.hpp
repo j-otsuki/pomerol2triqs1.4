@@ -71,7 +71,7 @@ namespace pomerol2triqs {
     std::set<Pomerol::ParticleIndex> computed_ops;
     std::unique_ptr<Pomerol::FieldOperatorContainer> ops_container;
 
-    Pomerol::Lattice init();
+    Pomerol::Lattice init(bool spin_orbit);
     Pomerol::ParticleIndex lookup_pomerol_index(indices_t const &i) const;
     std::set<Pomerol::ParticleIndex> gf_struct_to_pomerol_indices(gf_struct_t const &gf_struct) const;
     double diagonalize_prepare(many_body_op_t const &hamiltonian);
@@ -91,7 +91,7 @@ namespace pomerol2triqs {
 
     public:
     /// Create a new solver object
-    pomerol_ed(index_converter_t const &index_converter, bool verbose = false);
+    pomerol_ed(index_converter_t const &index_converter, bool verbose = false, bool spin_orbit = false);
 
     /// Diagonalize Hamiltonian optionally employing conservation of N and S_z
     void diagonalize(many_body_op_t const &hamiltonian, bool ignore_symmetries = false);

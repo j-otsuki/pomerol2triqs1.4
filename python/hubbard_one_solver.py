@@ -10,10 +10,6 @@ from itertools import product
 class Solver:
     def __init__(self, beta, gf_struct, n_iw, spin_orbit=False, verbose=True):
 
-        # TODO: spin_orbit
-        if spin_orbit:
-            print "*** hubbard_one_solver.Solver: spin_orbit not implemented yet"
-
         self.beta = beta
         self.gf_struct = gf_struct
         self.n_iw = n_iw
@@ -32,13 +28,19 @@ class Solver:
             print "*** spin_names =", self.spin_names
             print "*** orb_names  =", self.orb_names
 
-        off_diag = True
-        mkind = get_mkind(off_diag, None)
+        # check spin_names
+        for sn in self.spin_names:
+            if not spin_orbit:  assert sn in ('down', 'dn', 'up')  # become either 'down' or 'up'
+            if     spin_orbit:  assert sn in ('down', 'dn', 'ud')  # all become 'down'
+
         # Conversion from TRIQS to Pomerol notation for operator indices
-        index_converter = {mkind(sn, bn) : ("atom", bi, "down" if sn == "dn" else sn)
+        # TRIQS: ('dn', '-2') --> Pomerol: ('atom', 0, 'down')
+        # NOTE: When spin_orbit is true, only spin 'down' is used.
+        mkind = get_mkind(True, None)
+        index_converter = {mkind(sn, bn) : ("atom", bi, "down" if sn == "dn" or sn == "ud" else sn)
                            for sn, (bi, bn) in product(self.spin_names, enumerate(self.orb_names))}
 
-        self.__ed = PomerolED(index_converter, verbose)
+        self.__ed = PomerolED(index_converter, verbose, spin_orbit)
 
         # init G_iw
         glist = lambda : [ GfImFreq(indices=self.orb_names, beta=beta, n_points=n_iw) for block, inner in gf_struct.items() ]
@@ -51,7 +53,7 @@ class Solver:
 
         self.__copy_E_levels(E_levels)
 
-        H_0 = sum( self.E_levels[sn][o1,o2].real*c_dag(sn,o1)*c(sn,o2) for sn, o1, o2 in product(self.spin_names, self.orb_names, self.orb_names))
+        H_0 = sum( self.E_levels[sn][oi1,oi2].real*c_dag(sn,on1)*c(sn,on2) for sn, (oi1,on1), (oi2,on2) in product(self.spin_names, enumerate(self.orb_names), enumerate(self.orb_names)))
         if self.verbose and mpi.is_master_node():
             print "\n*** compute G_iw and Sigma_iw"
             print "*** E_levels =", E_levels

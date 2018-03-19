@@ -52,26 +52,28 @@ g2_n_wf = 10
 # Input for Pomerol #
 #####################
 
-spin_names = ("up", "down")
-orb_names = range(-L, L+1)
+spin_names = ("up", "dn")
+orb_names = map(str, range(-L, L+1))
+# orb_names = range(-L, L+1)  # This also works
 
-# GF structure
-off_diag = True
-gf_struct = set_operator_structure(spin_names, orb_names, off_diag=off_diag)
+flag_so = True if ls_coupling != 0 else False
 
-# mkind = get_mkind(off_diag, None)
-# # Conversion from TRIQS to Pomerol notation for operator indices
-# index_converter = {mkind(sn, bn) : ("atom", bi, "down" if sn == "dn" else "up")
-#                    for sn, (bi, bn) in product(spin_names, enumerate(orb_names))}
-#
-# if mpi.is_master_node():
-#     print "Block structure of single-particle Green's functions:", gf_struct
-#     print "index_converter:", index_converter
+# GF and operator structure
+if not flag_so:
+    # ('up', '-2'), ('dn', '-2'), etc
+    gf_struct = set_operator_structure(spin_names, orb_names, off_diag=True)
+    map_operator_structure = { (s,o) : (s,o) for s, o in product(spin_names, orb_names) }
+else:
+    # ('ud', 'up_-2'), ('ud', 'dn_-2'), etc
+    gf_struct = {'ud': [str(s)+'_'+str(o) for s, o in product(spin_names, orb_names)] }
+    map_operator_structure = { (s,o) : ('ud', str(s)+'_'+str(o)) for s, o in product(spin_names, orb_names) }
+# print gf_struct
+# print map_operator_structure
 
 # Operators
-N = N_op(spin_names, orb_names, off_diag=off_diag)
-Sz = S_op('z', spin_names, orb_names, off_diag=off_diag)
-Lz = L_op('z', spin_names, orb_names, off_diag=off_diag, basis = 'spherical')
+N = N_op(spin_names, orb_names, map_operator_structure=map_operator_structure)
+Sz = S_op('z', spin_names, orb_names, map_operator_structure=map_operator_structure)
+Lz = L_op('z', spin_names, orb_names, map_operator_structure=map_operator_structure, basis = 'spherical')
 Jz = Sz + Lz
 
 # LS coupling term
@@ -80,7 +82,7 @@ Jz = Sz + Lz
 # Hamiltonian
 # U_mat = U_matrix(L, radial_integrals = [F0,F2,F4], basis='spherical')
 U_mat = U_matrix(L, U_int=U, J_hund=J, basis='spherical')
-H_int = h_int_slater(spin_names, orb_names, U_mat, off_diag=off_diag)
+H_int = h_int_slater(spin_names, orb_names, U_mat, map_operator_structure=map_operator_structure)
 
 # H -= mu*N
 # H += ls_coupling * LS
@@ -96,18 +98,24 @@ H_int = h_int_slater(spin_names, orb_names, U_mat, off_diag=off_diag)
 # print "[H, Jz]", str_if_commute(Jz)
 
 E_levels = {}
-for sp in spin_names:
-    E_levels[sp] = np.diag( [-mu]*len(orb_names) )
+if not flag_so:
+    for sp in spin_names:
+        E_levels[sp] = np.diag( [-mu]*len(orb_names) )
+else:
+    # TODO: add matrix elements of spin-orbit coupling
+    E_levels['ud'] = np.diag( [-mu]*len(orb_names)*2 )
+
 # print type(E_levels)
 # print type(E_levels['up'])
 
-const_of_motion = [N, Sz, Lz]
+# const_of_motion = [N, Sz, Lz]
+const_of_motion = [N, Sz, Lz] if not flag_so else [N, Jz]
 
 #####################
 # Pomerol ED solver #
 #####################
 
-S = Solver(beta, gf_struct, n_iw, spin_orbit=False, verbose=True)
+S = Solver(beta, gf_struct, n_iw, spin_orbit=flag_so, verbose=True)
 
 S.solve(H_int, E_levels, const_of_motion=const_of_motion, file_quantum_numbers="quantum_numbers.dat", file_eigenvalues="eigenvalues.dat")
 

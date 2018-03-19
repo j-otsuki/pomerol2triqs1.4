@@ -44,7 +44,7 @@ namespace pomerol2triqs {
     return neg_o ? std::conj(res) : res;
   }
 
-  Pomerol::Lattice pomerol_ed::init() {
+  Pomerol::Lattice pomerol_ed::init(bool spin_orbit) {
 
     Pomerol::Lattice l;
 
@@ -61,13 +61,14 @@ namespace pomerol2triqs {
         it->second = std::max(it->second, pomerol_orb);
     }
 
-    for (auto const &site_orb : site_max_orb) l.addSite(new Pomerol::Lattice::Site(site_orb.first, site_orb.second + 1, 2));
+    int n_spin = spin_orbit ? 1 : 2;
+    for (auto const &site_orb : site_max_orb) l.addSite(new Pomerol::Lattice::Site(site_orb.first, site_orb.second + 1, n_spin));
 
     return l;
   }
 
-  pomerol_ed::pomerol_ed(index_converter_t const &index_converter, bool verbose)
-     : verbose(verbose), index_converter(index_converter), bare_lattice(init()), index_info(bare_lattice.getSiteMap()) {
+  pomerol_ed::pomerol_ed(index_converter_t const &index_converter, bool verbose, bool spin_orbit)
+     : verbose(verbose), index_converter(index_converter), bare_lattice(init(spin_orbit)), index_info(bare_lattice.getSiteMap()) {
     index_info.prepare();
     if (verbose && !comm.rank()) {
       std::cout << "\nPomerol: lattice sites" << std::endl;
