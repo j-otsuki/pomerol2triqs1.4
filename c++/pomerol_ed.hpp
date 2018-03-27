@@ -82,7 +82,7 @@ namespace pomerol2triqs {
 
     // using w_nu_nup_t = cartesian_product<imfreq, imfreq, imfreq>;
     // using w_l_lp_t   = cartesian_product<imfreq, legendre, legendre>;
-    using g2_t = array<std::complex<double>, 3>;
+    using g2_t = triqs::arrays::array<std::complex<double>, 3>;
     // template <typename Mesh, typename Filler>
     // block2_gf<Mesh, tensor_valued<4>> compute_g2(gf_struct_t const &gf_struct, gf_mesh<Mesh> const &mesh, block_order_t block_order,
     //                                              g2_blocks_t const &g2_blocks, Filler filler) const;

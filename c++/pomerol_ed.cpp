@@ -428,12 +428,41 @@ namespace pomerol2triqs {
     std::iota(index_wb.begin(), index_wb.end(), 0);
     // for( auto i : iw_b )  std::cout << i << std::endl;
 
-    g2_t g2(p.n_b, 2*p.n_f, 2*p.n_f);
+    // std::cout << "Start freq loop: rank" << comm.rank() << std::endl;
+    // g2_t g2(p.n_b, 2*p.n_f, 2*p.n_f);
+    // // std::cout << typeid(g2).name() << std::endl;
+    // for(int ib=0; ib<index_wb.size(); ib++)
+    //   for(int if1=0; if1<index_wf.size(); if1++)
+    //     for(int if2=0; if2<index_wf.size(); if2++)
+    //       g2(ib, if1, if2) = -pom_g2(index_wb[ib]+index_wf[if1], index_wf[if2], index_wf[if1]);
+
+    // create a list of three frequency-indices
+    std::vector< std::tuple<int, int, int> > three_freqs;
     for(int ib=0; ib<index_wb.size(); ib++)
       for(int if1=0; if1<index_wf.size(); if1++)
         for(int if2=0; if2<index_wf.size(); if2++)
-          g2(ib, if1, if2) = -pom_g2(index_wb[ib]+index_wf[if1], index_wf[if2], index_wf[if1]);
+          three_freqs.push_back( std::make_tuple(ib, if1, if2) );
+    // std::cout << three_freqs.size() << std::endl;
 
+    // compute g2 value using MPI
+    g2_t g2(p.n_b, 2*p.n_f, 2*p.n_f);
+    for(int i=comm.rank(); i<three_freqs.size(); i+=comm.size()){
+      int ib = std::get<0>(three_freqs[i]);
+      int if1 = std::get<1>(three_freqs[i]);
+      int if2 = std::get<2>(three_freqs[i]);
+      g2(ib, if1, if2) = -pom_g2(index_wb[ib]+index_wf[if1], index_wf[if2], index_wf[if1]);
+    }
+
+    // broadcast results
+    for(int i=0; i<three_freqs.size(); i++){
+      int ib = std::get<0>(three_freqs[i]);
+      int if1 = std::get<1>(three_freqs[i]);
+      int if2 = std::get<2>(three_freqs[i]);
+      int sender = i % comm.size();
+      boost::mpi::broadcast(comm, g2(ib, if1, if2), sender);
+    }
+
+    // std::cout << "End freq loop: rank" << comm.rank() << std::endl;
     return g2;
   }
 
