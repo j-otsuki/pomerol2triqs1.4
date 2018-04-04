@@ -49,7 +49,7 @@ class Solver:
         self.G0_iw = self.G_iw.copy()
         self.Sigma_iw = self.G_iw.copy()
 
-    def solve(self, H_int, E_levels, const_of_motion=None, density_matrix_cutoff=1e-10, file_quantum_numbers="", file_eigenvalues=""):
+    def solve(self, H_int, E_levels, integrals_of_motion=None, density_matrix_cutoff=1e-10, file_quantum_numbers="", file_eigenvalues=""):
 
         self.__copy_E_levels(E_levels)
 
@@ -58,11 +58,11 @@ class Solver:
             print "\n*** compute G_iw and Sigma_iw"
             print "*** E_levels =", E_levels
             print "*** H_0 =", H_0
-            print "*** const_of_motion =", const_of_motion
+            # print "*** integrals_of_motion =", integrals_of_motion
 
         N_op = sum( c_dag(sn,on)*c(sn,on) for sn, on in product(self.spin_names, self.orb_names) )
 
-        if const_of_motion is None:
+        if integrals_of_motion is None:
             if self.spin_orbit:
                 # use only N op as integrals_of_motion when spin-orbit coupling is included
                 self.__ed.diagonalize(H_0+H_int, integrals_of_motion=[N_op])
@@ -70,7 +70,21 @@ class Solver:
                 # use N and S_z as integrals of motion by default
                 self.__ed.diagonalize(H_0+H_int)
         else:
-            self.__ed.diagonalize(H_0+H_int, const_of_motion)
+            assert isinstance(integrals_of_motion, list)
+
+            # check commutation relation in advance (just for test)
+            if self.verbose and mpi.is_master_node():
+                print "*** Integrals of motion:"
+                for i, op in enumerate(integrals_of_motion):
+                    print " op%d =" %i, op
+
+                print "*** commutation relations:"
+                is_commute = lambda h, op: h*op - op*h
+                str_if_commute = lambda h, op: "== 0" if is_commute(h, op).is_zero() else "!= 0"
+                for i, op in enumerate(integrals_of_motion):
+                    print " [H_0, op%d]" %i, str_if_commute(H_0, op), " [H_int, op%d]" %i, str_if_commute(H_int, op)
+
+            self.__ed.diagonalize(H_0+H_int, integrals_of_motion)
 
         # save data
         if file_quantum_numbers:
