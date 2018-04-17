@@ -24,6 +24,7 @@
 // #include <triqs/arrays.hpp>
 #include <fstream>
 #include <algorithm>
+#include <numeric>
 
 namespace pomerol2triqs {
 
