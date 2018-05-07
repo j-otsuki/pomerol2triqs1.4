@@ -67,10 +67,10 @@ c.add_method("""block_gf<imtime> G_tau (gf_struct_t gf_struct, double beta, int 
 c.add_method("""block_gf<refreq> G_w (gf_struct_t gf_struct, double beta, std::pair<double,double> energy_window, int n_w, double im_shift = 0)""",
              doc = r"""Retarded Green's function on real energy axis""")
 
-c.add_method("""triqs::arrays::array<std::complex<double>, 3> G2_iw (**pomerol2triqs::g2_iw_inu_inup_params_t)""",
+c.add_method("""triqs::arrays::array<std::complex<double>, 3> G2_iw_freq_box (**pomerol2triqs::g2_iw_freq_box_params_t)""",
              doc = r"""Two-particle Green's function. Specify frequency cutoff, n_b and n_f.""")
 
-c.add_method("""std::vector<std::complex<double> > G2_iw_three_freqs (**pomerol2triqs::g2_three_freqs_params_t)""",
+c.add_method("""std::vector<std::vector<std::complex<double> > > G2_iw_freqs_vec (**pomerol2triqs::g2_iw_freq_vec_params_t)""",
              doc = r"""Two-particle Green's function. Specify three frequencies (wb, wf1, wf2).""")
 
 module.add_class(c)

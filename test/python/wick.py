@@ -81,12 +81,12 @@ common_g2_params = {'channel' : "PH",
                     'n_f' : g2_n_wf,
                     'n_b' : g2_n_wb, }
 
-G2_ph_uuuu = ed.G2_iw( index1=('up',0), index2=('up',0), index3=('up',0), index4=('up',0), **common_g2_params )
-G2_ph_dddd = ed.G2_iw( index1=('dn',0), index2=('dn',0), index3=('dn',0), index4=('dn',0), **common_g2_params )
-G2_ph_uudd = ed.G2_iw( index1=('up',0), index2=('up',0), index3=('dn',0), index4=('dn',0), **common_g2_params )
-G2_ph_dduu = ed.G2_iw( index1=('dn',0), index2=('dn',0), index3=('up',0), index4=('up',0), **common_g2_params )
-G2_ph_uddu = ed.G2_iw( index1=('up',0), index2=('dn',0), index3=('dn',0), index4=('up',0), **common_g2_params )
-G2_ph_duud = ed.G2_iw( index1=('dn',0), index2=('up',0), index3=('up',0), index4=('dn',0), **common_g2_params )
+G2_ph_uuuu = ed.G2_iw_freq_box( index1=('up',0), index2=('up',0), index3=('up',0), index4=('up',0), **common_g2_params )
+G2_ph_dddd = ed.G2_iw_freq_box( index1=('dn',0), index2=('dn',0), index3=('dn',0), index4=('dn',0), **common_g2_params )
+G2_ph_uudd = ed.G2_iw_freq_box( index1=('up',0), index2=('up',0), index3=('dn',0), index4=('dn',0), **common_g2_params )
+G2_ph_dduu = ed.G2_iw_freq_box( index1=('dn',0), index2=('dn',0), index3=('up',0), index4=('up',0), **common_g2_params )
+G2_ph_uddu = ed.G2_iw_freq_box( index1=('up',0), index2=('dn',0), index3=('dn',0), index4=('up',0), **common_g2_params )
+G2_ph_duud = ed.G2_iw_freq_box( index1=('dn',0), index2=('up',0), index3=('up',0), index4=('dn',0), **common_g2_params )
 
 G2_ph_uuuu_wick = G2_ph_uuuu.copy()
 G2_ph_dddd_wick = G2_ph_dddd.copy()

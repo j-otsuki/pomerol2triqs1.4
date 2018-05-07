@@ -82,12 +82,15 @@ namespace pomerol2triqs {
 
     // using w_nu_nup_t = cartesian_product<imfreq, imfreq, imfreq>;
     // using w_l_lp_t   = cartesian_product<imfreq, legendre, legendre>;
-    using g2_t = triqs::arrays::array<std::complex<double>, 3>;
-    using g2_three_freqs_t = std::vector<std::complex<double> >;
+    using g2_iw_freq_box_t = triqs::arrays::array<std::complex<double>, 3>;
+    using g2_iw_freq_vec_t = std::vector<std::complex<double> >;
     // template <typename Mesh, typename Filler>
     // block2_gf<Mesh, tensor_valued<4>> compute_g2(gf_struct_t const &gf_struct, gf_mesh<Mesh> const &mesh, block_order_t block_order,
     //                                              g2_blocks_t const &g2_blocks, Filler filler) const;
-    std::vector<std::complex<double> > compute_g2(gf_struct_t const &gf_struct, double beta, channel_t channel, indices_t index1, indices_t index2, indices_t index3, indices_t index4, three_freqs_t const &three_freqs);
+    g2_iw_freq_vec_t compute_g2(gf_struct_t const &gf_struct, double beta, channel_t channel, indices_t index1, indices_t index2, indices_t index3, indices_t index4, three_freqs_t const &three_freqs);
+
+    // std::vector<g2_iw_freq_vec_t> compute_g2_indices_loop(gf_struct_t const &gf_struct, double beta, channel_t channel, std::vector<four_indices_t> const &vec_four_indices, three_freqs_t const &three_freqs);
+    std::vector< g2_iw_freq_vec_t > compute_g2_indices_loop(gf_struct_t const &gf_struct, double beta, channel_t channel, std::vector<four_indices_t> const &vec_four_indices, three_freqs_t const &three_freqs);
 
     double density_matrix_cutoff = 1e-15;
 
@@ -121,11 +124,11 @@ namespace pomerol2triqs {
 
     /// Two-particle Green's function. Specify frequency cutoff, n_b and n_f.
     TRIQS_WRAP_ARG_AS_DICT
-    g2_t G2_iw(g2_iw_inu_inup_params_t const &p);
+    g2_iw_freq_box_t G2_iw_freq_box(g2_iw_freq_box_params_t const &p);
 
     /// Two-particle Green's function. Specify three frequencies (wb, wf1, wf2).
     TRIQS_WRAP_ARG_AS_DICT
-    g2_three_freqs_t G2_iw_three_freqs(g2_three_freqs_params_t const &p);
+    std::vector<g2_iw_freq_vec_t> G2_iw_freqs_vec(g2_iw_freq_vec_params_t const &p);
 
     /// Two-particle Green's function, Matsubara frequencies
     // TRIQS_WRAP_ARG_AS_DICT
