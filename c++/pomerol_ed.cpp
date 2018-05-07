@@ -525,7 +525,21 @@ namespace pomerol2triqs {
   }
 
 
-  auto pomerol_ed::G2_iw_freq_box(g2_iw_freq_box_params_t const &p) -> g2_iw_freq_box_t {
+  auto pomerol_ed::G2_iw_legacy(g2_iw_legacy_params_t const &p) -> g2_iw_freq_box_t {
+    g2_iw_freq_box_params_t p2;
+    p2.gf_struct = p.gf_struct;
+    p2.beta = p.beta;
+    p2.channel = p.channel;
+    p2.n_b = p.n_b;
+    p2.n_f = p.n_f;
+    four_indices_t four_indices = std::make_tuple(p.index1, p.index2, p.index3, p.index4);
+    p2.vec_four_indices.push_back( four_indices );
+
+    std::vector<g2_iw_freq_box_t> vec_g2 = G2_iw_freq_box(p2);
+    return vec_g2[0];
+  }
+
+  auto pomerol_ed::G2_iw_freq_box(g2_iw_freq_box_params_t const &p) -> std::vector<g2_iw_freq_box_t> {
 
     // create a list of three frequencies, (wb, wf1, wf2)
     three_freqs_t three_freqs;
@@ -552,18 +566,23 @@ namespace pomerol2triqs {
     }
 
     // compute g2 values
-    g2_iw_freq_vec_t g2_three_freqs = compute_g2(p.gf_struct, p.beta, p.channel, p.index1, p.index2, p.index3, p.index4, three_freqs);
+    // g2_iw_freq_vec_t g2_three_freqs = compute_g2(p.gf_struct, p.beta, p.channel, p.index1, p.index2, p.index3, p.index4, three_freqs);
+    std::vector<g2_iw_freq_vec_t> vec_g2_freq_vec = compute_g2_indices_loop(p.gf_struct, p.beta, p.channel, p.vec_four_indices, three_freqs);
 
-    // reshape G2
-    g2_iw_freq_box_t g2(p.n_b, 2*p.n_f, 2*p.n_f);
-    for(int i=0; i<three_indices.size(); i++){
-      int ib = std::get<0>(three_indices[i]);
-      int if1 = std::get<1>(three_indices[i]);
-      int if2 = std::get<2>(three_indices[i]);
-      g2(ib, if1, if2) = g2_three_freqs[i];
+    // reshape G2 (from freq_vec to freq_box)
+    std::vector<g2_iw_freq_box_t> vec_g2_freq_box;
+    for( auto g2_freq_vec : vec_g2_freq_vec ){
+      g2_iw_freq_box_t g2(p.n_b, 2*p.n_f, 2*p.n_f);
+      for(int i=0; i<three_indices.size(); i++){
+        int ib = std::get<0>(three_indices[i]);
+        int if1 = std::get<1>(three_indices[i]);
+        int if2 = std::get<2>(three_indices[i]);
+        g2(ib, if1, if2) = g2_freq_vec[i];
+      }
+      vec_g2_freq_box.push_back(g2);
     }
 
-    return g2;
+    return vec_g2_freq_box;
   }
 
 

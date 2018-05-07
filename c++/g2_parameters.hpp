@@ -13,7 +13,7 @@ namespace pomerol2triqs {
 
   // using g2_blocks_t = std::set<std::pair<std::string, std::string>>;
 
-  struct g2_iw_freq_box_params_t {
+  struct g2_iw_legacy_params_t {
 
     /// Block structure of GF
     gf_struct_t gf_struct;
@@ -30,8 +30,26 @@ namespace pomerol2triqs {
     /// indices of operators in TRIQS convention: (block_name, inner_index)
     indices_t index1, index2, index3, index4;
 
-    // g2_iw_freq_box_params_t() {}
-    // g2_iw_freq_box_params_t(gf_struct_t const &gf_struct, double beta) : gf_struct(gf_struct), beta(beta) {}
+    // g2_iw_legacy_params_t() {}
+    // g2_iw_legacy_params_t(gf_struct_t const &gf_struct, double beta) : gf_struct(gf_struct), beta(beta) {}
+  };
+
+  struct g2_iw_freq_box_params_t {
+
+    /// Block structure of GF
+    gf_struct_t gf_struct;
+
+    /// Inverse temperature
+    double beta;
+
+    /// Channel in which Matsubara frequency representation is defined.
+    channel_t channel = PH;
+
+    /// Number of bosonic and fermionic Matsubara frequencies.
+    int n_b, n_f;
+
+    /// set of indices of four operators in TRIQS convention: (block_name, inner_index)*4
+    std::vector<four_indices_t> vec_four_indices;
   };
 
   struct g2_iw_freq_vec_params_t {
@@ -51,9 +69,6 @@ namespace pomerol2triqs {
     /// set of indices of four operators in TRIQS convention: (block_name, inner_index)*4
     // indices_t index1, index2, index3, index4;
     std::vector<four_indices_t> vec_four_indices;
-
-    // g2_iw_freq_vec_params_t() {}
-    // g2_iw_freq_vec_params_t(gf_struct_t const &gf_struct, double beta) : gf_struct(gf_struct), beta(beta) {}
   };
 
 /*

@@ -73,14 +73,14 @@ common_g2_params = {'channel' : "PH",
 
 
 # Compute G^{(2),ph}(i\omega;i\nu,i\nu'), AABB block order
-G2_iw_ph_uuuu = ed.G2_iw_freq_box( index1=('up',0), index2=('up',0), index3=('up',0), index4=('up',0), **common_g2_params )
-G2_iw_ph_dddd = ed.G2_iw_freq_box( index1=('dn',0), index2=('dn',0), index3=('dn',0), index4=('dn',0), **common_g2_params )
-G2_iw_ph_uudd = ed.G2_iw_freq_box( index1=('up',0), index2=('up',0), index3=('dn',0), index4=('dn',0), **common_g2_params )
-G2_iw_ph_dduu = ed.G2_iw_freq_box( index1=('dn',0), index2=('dn',0), index3=('up',0), index4=('up',0), **common_g2_params )
+G2_iw_ph_uuuu = ed.G2_iw_legacy( index1=('up',0), index2=('up',0), index3=('up',0), index4=('up',0), **common_g2_params )
+G2_iw_ph_dddd = ed.G2_iw_legacy( index1=('dn',0), index2=('dn',0), index3=('dn',0), index4=('dn',0), **common_g2_params )
+G2_iw_ph_uudd = ed.G2_iw_legacy( index1=('up',0), index2=('up',0), index3=('dn',0), index4=('dn',0), **common_g2_params )
+G2_iw_ph_dduu = ed.G2_iw_legacy( index1=('dn',0), index2=('dn',0), index3=('up',0), index4=('up',0), **common_g2_params )
 
 # Compute G^{(2),ph}(i\omega;i\nu,i\nu'), ABBA block order
-G2_iw_ph_uddu = ed.G2_iw_freq_box( index1=('up',0), index2=('dn',0), index3=('dn',0), index4=('up',0), **common_g2_params )
-G2_iw_ph_duud = ed.G2_iw_freq_box( index1=('dn',0), index2=('up',0), index3=('up',0), index4=('dn',0), **common_g2_params )
+G2_iw_ph_uddu = ed.G2_iw_legacy( index1=('up',0), index2=('dn',0), index3=('dn',0), index4=('up',0), **common_g2_params )
+G2_iw_ph_duud = ed.G2_iw_legacy( index1=('dn',0), index2=('up',0), index3=('up',0), index4=('dn',0), **common_g2_params )
 
 # Compute G^{(2),pp}(i\omega;i\nu,i\nu'), AABB block order
 # G2_iw_inu_inup_pp_AABB = ed.G2_iw_inu_inup(channel = "PP",

@@ -145,7 +145,7 @@ common_g2_params = {'channel' : "PH",
 # G^{(2)}(i\omega;i\nu,i\nu') #
 ###############################
 
-G2_iw = ed.G2_iw_freq_box( index1=('up',0), index2=('dn',0), index3=('dn',1), index4=('up',1), **common_g2_params )
+G2_iw = ed.G2_iw_legacy( index1=('up',0), index2=('dn',0), index3=('dn',1), index4=('up',1), **common_g2_params )
 
 if mpi.is_master_node():
     print type(G2_iw)

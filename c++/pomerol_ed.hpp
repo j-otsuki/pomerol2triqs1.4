@@ -124,7 +124,11 @@ namespace pomerol2triqs {
 
     /// Two-particle Green's function. Specify frequency cutoff, n_b and n_f.
     TRIQS_WRAP_ARG_AS_DICT
-    g2_iw_freq_box_t G2_iw_freq_box(g2_iw_freq_box_params_t const &p);
+    g2_iw_freq_box_t G2_iw_legacy(g2_iw_legacy_params_t const &p);
+
+    /// Two-particle Green's function. Specify frequency cutoff, n_b and n_f.
+    TRIQS_WRAP_ARG_AS_DICT
+    std::vector<g2_iw_freq_box_t> G2_iw_freq_box(g2_iw_freq_box_params_t const &p);
 
     /// Two-particle Green's function. Specify three frequencies (wb, wf1, wf2).
     TRIQS_WRAP_ARG_AS_DICT
