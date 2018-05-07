@@ -397,7 +397,7 @@ namespace pomerol2triqs {
   ///////////////////////////////////
   // Two-particle Green's function //
   ///////////////////////////////////
-
+/*
   auto pomerol_ed::G2_iw(g2_iw_inu_inup_params_t const &p) -> g2_t {
     if (!matrix_h) TRIQS_RUNTIME_ERROR << "G2_iw: no Hamiltonian has been diagonalized";
     compute_rho(p.beta);
@@ -466,6 +466,142 @@ namespace pomerol2triqs {
     // std::cout << "End freq loop: rank" << comm.rank() << std::endl;
     return g2;
   }
+*/
+
+  // core function for computing G2
+  std::vector<std::complex<double> > pomerol_ed::compute_g2(gf_struct_t const &gf_struct, double beta, channel_t channel, indices_t index1, indices_t index2, indices_t index3, indices_t index4, three_freqs_t const &three_freqs){
+
+    if (!matrix_h) TRIQS_RUNTIME_ERROR << "G2_iw: no Hamiltonian has been diagonalized";
+    compute_rho(beta);
+    compute_field_operators(gf_struct);
+
+    if (verbose && !comm.rank()) { std::cout << "\nPomerol: computing TwoParticleGF" << std::endl; }
+
+    Pomerol::ParticleIndex pom_i1 = lookup_pomerol_index(index1);
+    Pomerol::ParticleIndex pom_i2 = lookup_pomerol_index(index2);
+    Pomerol::ParticleIndex pom_i3 = lookup_pomerol_index(index3);
+    Pomerol::ParticleIndex pom_i4 = lookup_pomerol_index(index4);
+
+    Pomerol::TwoParticleGF pom_g2(*states_class, *matrix_h,
+                                  ops_container->getAnnihilationOperator(pom_i2),
+                                  ops_container->getAnnihilationOperator(pom_i4),
+                                  ops_container->getCreationOperator(pom_i1),
+                                  ops_container->getCreationOperator(pom_i3),
+                                  *rho);
+    pom_g2.prepare();
+    pom_g2.compute(false, {}, comm);
+
+    // compute g2 value using MPI
+    g2_three_freqs_t g2( three_freqs.size() );
+    for(int i=comm.rank(); i<three_freqs.size(); i+=comm.size()){
+      int wb = std::get<0>(three_freqs[i]);
+      int wf1 = std::get<1>(three_freqs[i]);
+      int wf2 = std::get<2>(three_freqs[i]);
+      g2[i] = -pom_g2(wb+wf1, wf2, wf1);
+    }
+
+    // broadcast results
+    for(int i=0; i<three_freqs.size(); i++){
+      int sender = i % comm.size();
+      boost::mpi::broadcast(comm, g2[i], sender);
+    }
+
+    // std::cout << "End freq loop: rank" << comm.rank() << std::endl;
+    return g2;
+  }
+
+
+  auto pomerol_ed::G2_iw(g2_iw_inu_inup_params_t const &p) -> g2_t {
+
+    // create a list of three frequencies, (wb, wf1, wf2)
+    three_freqs_t three_freqs;
+    std::vector< std::tuple<int, int, int> > three_indices;  // (ib, if1, if2)
+    {
+      // indices of fermionic Matsubara frequencies [-n_f:n_f)
+      std::vector<int> index_wf(2*p.n_f);
+      std::iota(index_wf.begin(), index_wf.end(), -p.n_f);
+      // for( auto i : iw_f )  std::cout << i << std::endl;
+
+      // indices of bosonic Matsubara frequencies [0:n_b)
+      std::vector<int> index_wb(p.n_b);
+      std::iota(index_wb.begin(), index_wb.end(), 0);
+      // for( auto i : iw_b )  std::cout << i << std::endl;
+
+      for(int ib=0; ib<index_wb.size(); ib++)
+        for(int if1=0; if1<index_wf.size(); if1++)
+          for(int if2=0; if2<index_wf.size(); if2++){
+            // three_freqs.push_back( std::make_tuple(ib, if1, if2) );
+            three_freqs.push_back( std::make_tuple(index_wb[ib], index_wf[if1], index_wf[if2]) );
+            three_indices.push_back( std::make_tuple(ib, if1, if2) );
+          }
+      // std::cout << three_freqs.size() << std::endl;
+    }
+
+    // compute g2 values
+    // g2_three_freqs_t g2_three_freqs = G2_iw_three_freqs(p_core);
+    g2_three_freqs_t g2_three_freqs = compute_g2(p.gf_struct, p.beta, p.channel, p.index1, p.index2, p.index3, p.index4, three_freqs);
+
+    // reshape G2
+    g2_t g2(p.n_b, 2*p.n_f, 2*p.n_f);
+    for(int i=0; i<three_indices.size(); i++){
+      int ib = std::get<0>(three_indices[i]);
+      int if1 = std::get<1>(three_indices[i]);
+      int if2 = std::get<2>(three_indices[i]);
+      g2(ib, if1, if2) = g2_three_freqs[i];
+    }
+
+    return g2;
+  }
+
+
+  auto pomerol_ed::G2_iw_three_freqs(g2_three_freqs_params_t const &p) -> g2_three_freqs_t {
+    return compute_g2(p.gf_struct, p.beta, p.channel, p.index1, p.index2, p.index3, p.index4, p.three_freqs);
+  }
+/*
+  auto pomerol_ed::G2_iw_three_freqs(g2_three_freqs_params_t const &p) -> g2_three_freqs_t {
+    if (!matrix_h) TRIQS_RUNTIME_ERROR << "G2_iw: no Hamiltonian has been diagonalized";
+    compute_rho(p.beta);
+    compute_field_operators(p.gf_struct);
+
+    if (verbose && !comm.rank()) { std::cout << "\nPomerol: computing TwoParticleGF" << std::endl; }
+
+    Pomerol::ParticleIndex pom_i1 = lookup_pomerol_index(p.index1);
+    Pomerol::ParticleIndex pom_i2 = lookup_pomerol_index(p.index2);
+    Pomerol::ParticleIndex pom_i3 = lookup_pomerol_index(p.index3);
+    Pomerol::ParticleIndex pom_i4 = lookup_pomerol_index(p.index4);
+
+    Pomerol::TwoParticleGF pom_g2(*states_class, *matrix_h,
+                                  ops_container->getAnnihilationOperator(pom_i2),
+                                  ops_container->getAnnihilationOperator(pom_i4),
+                                  ops_container->getCreationOperator(pom_i1),
+                                  ops_container->getCreationOperator(pom_i3),
+                                  *rho);
+    pom_g2.prepare();
+    pom_g2.compute(false, {}, comm);
+
+    // compute g2 value using MPI
+    g2_three_freqs_t g2( p.three_freqs.size() );
+    for(int i=comm.rank(); i<p.three_freqs.size(); i+=comm.size()){
+      // int ib = std::get<0>(three_freqs[i]);
+      // int if1 = std::get<1>(three_freqs[i]);
+      // int if2 = std::get<2>(three_freqs[i]);
+      // g2(ib, if1, if2) = -pom_g2(index_wb[ib]+index_wf[if1], index_wf[if2], index_wf[if1]);
+      int wb = std::get<0>(p.three_freqs[i]);
+      int wf1 = std::get<1>(p.three_freqs[i]);
+      int wf2 = std::get<2>(p.three_freqs[i]);
+      g2[i] = -pom_g2(wb+wf1, wf2, wf1);
+    }
+
+    // broadcast results
+    for(int i=0; i<p.three_freqs.size(); i++){
+      int sender = i % comm.size();
+      boost::mpi::broadcast(comm, g2[i], sender);
+    }
+
+    // std::cout << "End freq loop: rank" << comm.rank() << std::endl;
+    return g2;
+  }
+*/
 
 /*
   template <typename Mesh, typename Filler>
