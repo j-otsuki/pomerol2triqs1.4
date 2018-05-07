@@ -72,15 +72,33 @@ common_g2_params = {'channel' : "PH",
                     'n_b' : g2_n_wb, }
 
 
-# Compute G^{(2),ph}(i\omega;i\nu,i\nu'), AABB block order
-G2_iw_ph_uuuu = ed.G2_iw_legacy( index1=('up',0), index2=('up',0), index3=('up',0), index4=('up',0), **common_g2_params )
-G2_iw_ph_dddd = ed.G2_iw_legacy( index1=('dn',0), index2=('dn',0), index3=('dn',0), index4=('dn',0), **common_g2_params )
-G2_iw_ph_uudd = ed.G2_iw_legacy( index1=('up',0), index2=('up',0), index3=('dn',0), index4=('dn',0), **common_g2_params )
-G2_iw_ph_dduu = ed.G2_iw_legacy( index1=('dn',0), index2=('dn',0), index3=('up',0), index4=('up',0), **common_g2_params )
+# # Compute G^{(2),ph}(i\omega;i\nu,i\nu'), AABB block order
+# G2_iw_ph_uuuu = ed.G2_iw_legacy( index1=('up',0), index2=('up',0), index3=('up',0), index4=('up',0), **common_g2_params )
+# G2_iw_ph_dddd = ed.G2_iw_legacy( index1=('dn',0), index2=('dn',0), index3=('dn',0), index4=('dn',0), **common_g2_params )
+# G2_iw_ph_uudd = ed.G2_iw_legacy( index1=('up',0), index2=('up',0), index3=('dn',0), index4=('dn',0), **common_g2_params )
+# G2_iw_ph_dduu = ed.G2_iw_legacy( index1=('dn',0), index2=('dn',0), index3=('up',0), index4=('up',0), **common_g2_params )
+#
+# # Compute G^{(2),ph}(i\omega;i\nu,i\nu'), ABBA block order
+# G2_iw_ph_uddu = ed.G2_iw_legacy( index1=('up',0), index2=('dn',0), index3=('dn',0), index4=('up',0), **common_g2_params )
+# G2_iw_ph_duud = ed.G2_iw_legacy( index1=('dn',0), index2=('up',0), index3=('up',0), index4=('dn',0), **common_g2_params )
 
-# Compute G^{(2),ph}(i\omega;i\nu,i\nu'), ABBA block order
-G2_iw_ph_uddu = ed.G2_iw_legacy( index1=('up',0), index2=('dn',0), index3=('dn',0), index4=('up',0), **common_g2_params )
-G2_iw_ph_duud = ed.G2_iw_legacy( index1=('dn',0), index2=('up',0), index3=('up',0), index4=('dn',0), **common_g2_params )
+
+four_indices = []
+four_indices.append( (('up',0), ('up',0), ('up',0), ('up',0)) )  # uuuu
+four_indices.append( (('dn',0), ('dn',0), ('dn',0), ('dn',0)) )  # dddd
+four_indices.append( (('up',0), ('up',0), ('dn',0), ('dn',0)) )  # uudd
+four_indices.append( (('dn',0), ('dn',0), ('up',0), ('up',0)) )  # dduu
+four_indices.append( (('up',0), ('dn',0), ('dn',0), ('up',0)) )  # uddu
+four_indices.append( (('dn',0), ('up',0), ('up',0), ('dn',0)) )  # duud
+
+G2_iw_ph = ed.G2_iw_freq_box( vec_four_indices=four_indices, **common_g2_params )
+G2_iw_ph_uuuu = G2_iw_ph[0]
+G2_iw_ph_dddd = G2_iw_ph[1]
+G2_iw_ph_uudd = G2_iw_ph[2]
+G2_iw_ph_dduu = G2_iw_ph[3]
+G2_iw_ph_uddu = G2_iw_ph[4]
+G2_iw_ph_duud = G2_iw_ph[5]
+
 
 # Compute G^{(2),pp}(i\omega;i\nu,i\nu'), AABB block order
 # G2_iw_inu_inup_pp_AABB = ed.G2_iw_inu_inup(channel = "PP",
