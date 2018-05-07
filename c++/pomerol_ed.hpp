@@ -119,10 +119,11 @@ namespace pomerol2triqs {
     /// Retarded Green's function on real energy axis
     block_gf<refreq> G_w(gf_struct_t const &gf_struct, double beta, std::pair<double, double> const &energy_window, int n_w, double im_shift = 0);
 
-    /// Two-particle Green's function, Matsubara frequencies
+    /// Two-particle Green's function. Specify frequency cutoff, n_b and n_f.
     TRIQS_WRAP_ARG_AS_DICT
     g2_t G2_iw(g2_iw_inu_inup_params_t const &p);
 
+    /// Two-particle Green's function. Specify three frequencies (wb, wf1, wf2).
     TRIQS_WRAP_ARG_AS_DICT
     g2_three_freqs_t G2_iw_three_freqs(g2_three_freqs_params_t const &p);
 

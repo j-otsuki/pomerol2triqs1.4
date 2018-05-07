@@ -29,8 +29,8 @@ namespace pomerol2triqs {
     /// indices of operators in TRIQS convention: (block_name, inner_index)
     indices_t index1, index2, index3, index4;
 
-    g2_iw_inu_inup_params_t() {}
-    g2_iw_inu_inup_params_t(gf_struct_t const &gf_struct, double beta) : gf_struct(gf_struct), beta(beta) {}
+    // g2_iw_inu_inup_params_t() {}
+    // g2_iw_inu_inup_params_t(gf_struct_t const &gf_struct, double beta) : gf_struct(gf_struct), beta(beta) {}
   };
 
   struct g2_three_freqs_params_t {
@@ -50,8 +50,8 @@ namespace pomerol2triqs {
     /// indices of operators in TRIQS convention: (block_name, inner_index)
     indices_t index1, index2, index3, index4;
 
-    g2_three_freqs_params_t() {}
-    g2_three_freqs_params_t(gf_struct_t const &gf_struct, double beta) : gf_struct(gf_struct), beta(beta) {}
+    // g2_three_freqs_params_t() {}
+    // g2_three_freqs_params_t(gf_struct_t const &gf_struct, double beta) : gf_struct(gf_struct), beta(beta) {}
   };
 
 /*
