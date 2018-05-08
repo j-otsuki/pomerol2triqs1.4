@@ -95,10 +95,13 @@ common_g2_params = {'channel' : "PH",
 # G^{(2)}(i\omega;i\nu,i\nu') #
 ###############################
 
-G2_iw = ed.G2_iw( index1=('up',0), index2=('dn',0), index3=('dn',1), index4=('up',1), **common_g2_params )
-print type(G2_iw)
-print G2_iw.shape
+# G2_iw = ed.G2_iw_legacy( index1=('up',0), index2=('dn',0), index3=('dn',1), index4=('up',1), **common_g2_params )
 
+four_indices = [(('up',0), ('dn',0), ('dn',1), ('up',1))]
+G2_iw = ed.G2_iw_freq_box( four_indices=four_indices, **common_g2_params )
+
+print "G2_iw    :", type(G2_iw), "of size", len(G2_iw)
+print "G2_iw[0] :", type(G2_iw[0]), "of size", G2_iw[0].shape
 
 # # Compute G^{(2),ph}(i\omega;i\nu,i\nu'), AABB block order
 # G2_iw_inu_inup_ph_AABB = ed.G2_iw_inu_inup(channel = "PH",
@@ -125,4 +128,4 @@ if mpi.is_master_node():
         ar['G_iw'] = G_iw
         ar['G_tau'] = G_tau
         ar['G_w'] = G_w
-        ar['G2_ph'] = G2_iw
+        ar['G2_ph'] = G2_iw[0]

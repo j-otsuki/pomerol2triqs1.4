@@ -81,19 +81,43 @@ common_g2_params = {'channel' : "PH",
                     'n_f' : g2_n_wf,
                     'n_b' : g2_n_wb, }
 
-G2_ph_uuuu = ed.G2_iw( index1=('up',0), index2=('up',0), index3=('up',0), index4=('up',0), **common_g2_params )
-G2_ph_dddd = ed.G2_iw( index1=('dn',0), index2=('dn',0), index3=('dn',0), index4=('dn',0), **common_g2_params )
-G2_ph_uudd = ed.G2_iw( index1=('up',0), index2=('up',0), index3=('dn',0), index4=('dn',0), **common_g2_params )
-G2_ph_dduu = ed.G2_iw( index1=('dn',0), index2=('dn',0), index3=('up',0), index4=('up',0), **common_g2_params )
-G2_ph_uddu = ed.G2_iw( index1=('up',0), index2=('dn',0), index3=('dn',0), index4=('up',0), **common_g2_params )
-G2_ph_duud = ed.G2_iw( index1=('dn',0), index2=('up',0), index3=('up',0), index4=('dn',0), **common_g2_params )
+# G2_ph_uuuu = ed.G2_iw_legacy( index1=('up',0), index2=('up',0), index3=('up',0), index4=('up',0), **common_g2_params )
+# G2_ph_dddd = ed.G2_iw_legacy( index1=('dn',0), index2=('dn',0), index3=('dn',0), index4=('dn',0), **common_g2_params )
+# G2_ph_uudd = ed.G2_iw_legacy( index1=('up',0), index2=('up',0), index3=('dn',0), index4=('dn',0), **common_g2_params )
+# G2_ph_dduu = ed.G2_iw_legacy( index1=('dn',0), index2=('dn',0), index3=('up',0), index4=('up',0), **common_g2_params )
+# G2_ph_uddu = ed.G2_iw_legacy( index1=('up',0), index2=('dn',0), index3=('dn',0), index4=('up',0), **common_g2_params )
+# G2_ph_duud = ed.G2_iw_legacy( index1=('dn',0), index2=('up',0), index3=('up',0), index4=('dn',0), **common_g2_params )
 
-G2_ph_uuuu_wick = G2_ph_uuuu.copy()
-G2_ph_dddd_wick = G2_ph_dddd.copy()
-G2_ph_uudd_wick = G2_ph_uudd.copy()
-G2_ph_dduu_wick = G2_ph_dduu.copy()
-G2_ph_uddu_wick = G2_ph_uddu.copy()
-G2_ph_duud_wick = G2_ph_duud.copy()
+four_indices = []
+four_indices.append( (('up',0), ('up',0), ('up',0), ('up',0)) )  # uuuu
+four_indices.append( (('dn',0), ('dn',0), ('dn',0), ('dn',0)) )  # dddd
+four_indices.append( (('up',0), ('up',0), ('dn',0), ('dn',0)) )  # uudd
+four_indices.append( (('dn',0), ('dn',0), ('up',0), ('up',0)) )  # dduu
+four_indices.append( (('up',0), ('dn',0), ('dn',0), ('up',0)) )  # uddu
+four_indices.append( (('dn',0), ('up',0), ('up',0), ('dn',0)) )  # duud
+
+G2_ph = ed.G2_iw_freq_box( four_indices=four_indices, **common_g2_params )
+G2_ph_uuuu = G2_ph[0]
+G2_ph_dddd = G2_ph[1]
+G2_ph_uudd = G2_ph[2]
+G2_ph_dduu = G2_ph[3]
+G2_ph_uddu = G2_ph[4]
+G2_ph_duud = G2_ph[5]
+
+# G2_ph_uuuu_wick = G2_ph_uuuu.copy()
+# G2_ph_dddd_wick = G2_ph_dddd.copy()
+# G2_ph_uudd_wick = G2_ph_uudd.copy()
+# G2_ph_dduu_wick = G2_ph_dduu.copy()
+# G2_ph_uddu_wick = G2_ph_uddu.copy()
+# G2_ph_duud_wick = G2_ph_duud.copy()
+
+g2_shape = (g2_n_wb, 2*g2_n_wf, 2*g2_n_wf)
+G2_ph_uuuu_wick = np.zeros(g2_shape, dtype=np.complex)
+G2_ph_dddd_wick = np.zeros(g2_shape, dtype=np.complex)
+G2_ph_dduu_wick = np.zeros(g2_shape, dtype=np.complex)
+G2_ph_uudd_wick = np.zeros(g2_shape, dtype=np.complex)
+G2_ph_uddu_wick = np.zeros(g2_shape, dtype=np.complex)
+G2_ph_duud_wick = np.zeros(g2_shape, dtype=np.complex)
 
 G = lambda s, i: G_iw[s].data[i + n_iw, 0, 0]
 

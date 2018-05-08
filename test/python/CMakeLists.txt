@@ -7,6 +7,7 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${all_h5_files} DESTINATION ${CMAKE_CURREN
 triqs_add_python_test(anderson_gf)
 triqs_add_python_test(slater_gf)
 triqs_add_python_test(wick)
+triqs_add_python_test(g2_freq_box_and_freq_fix)
 
 foreach(TEST_MPI_NUMPROC 1 2 4)
     triqs_add_python_test(anderson_g2_matsubara)

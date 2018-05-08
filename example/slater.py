@@ -137,18 +137,36 @@ if mpi.is_master_node():
 
 common_g2_params = {'channel' : "PH",
                     'gf_struct' : gf_struct,
-                    'beta' : beta,
-                    'n_f' : g2_n_wf,
-                    'n_b' : g2_n_wb, }
+                    'beta' : beta,}
 
 ###############################
 # G^{(2)}(i\omega;i\nu,i\nu') #
 ###############################
 
-G2_iw = ed.G2_iw( index1=('up',0), index2=('dn',0), index3=('dn',1), index4=('up',1), **common_g2_params )
+# G2_iw = ed.G2_iw_legacy( index1=('up',0), index2=('dn',0), index3=('dn',1), index4=('up',1), **common_g2_params )
+
+# four-operators indices
+four_indices = []
+four_indices.append( (('up',0), ('dn',0), ('dn',1), ('up',1)) )
+four_indices.append( (('up',0), ('up',0), ('dn',1), ('dn',1)) )
+
+# compute G2 in a low-frequency box
+G2_iw = ed.G2_iw_freq_box( four_indices=four_indices, n_f=g2_n_wf, n_b=g2_n_wb, **common_g2_params )
 
 if mpi.is_master_node():
-    print type(G2_iw)
-    print G2_iw.shape
+    print "G2_iw    :", type(G2_iw), "of size", len(G2_iw)
+    print "G2_iw[0] :", type(G2_iw[0]), "of size", G2_iw[0].shape
     with HDFArchive('slater_gf.out.h5', 'a') as ar:
-        ar['G2_iw'] = G2_iw
+        ar['G2_iw_freq_box'] = G2_iw
+
+# compute G2 for given freqs, (wb, wf1, wf2)
+three_freqs = []
+three_freqs.append( (0, 1, 2) )
+three_freqs.append( (0, 1, -2) )
+G2_iw = ed.G2_iw_freq_fix( four_indices=four_indices, three_freqs=three_freqs, **common_g2_params )
+
+if mpi.is_master_node():
+    print "G2_iw    :", type(G2_iw), "of size", len(G2_iw)
+    print "G2_iw[0] :", type(G2_iw[0]), "of size", G2_iw[0].shape
+    with HDFArchive('slater_gf.out.h5', 'a') as ar:
+        ar['G2_iw_freq_fix'] = G2_iw
