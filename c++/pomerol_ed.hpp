@@ -83,14 +83,14 @@ namespace pomerol2triqs {
     // using w_nu_nup_t = cartesian_product<imfreq, imfreq, imfreq>;
     // using w_l_lp_t   = cartesian_product<imfreq, legendre, legendre>;
     using g2_iw_freq_box_t = triqs::arrays::array<std::complex<double>, 3>;
-    using g2_iw_freq_vec_t = std::vector<std::complex<double> >;
+    using g2_iw_freq_fix_t = triqs::arrays::array<std::complex<double>, 1>;
     // template <typename Mesh, typename Filler>
     // block2_gf<Mesh, tensor_valued<4>> compute_g2(gf_struct_t const &gf_struct, gf_mesh<Mesh> const &mesh, block_order_t block_order,
     //                                              g2_blocks_t const &g2_blocks, Filler filler) const;
-    g2_iw_freq_vec_t compute_g2(gf_struct_t const &gf_struct, double beta, channel_t channel, indices_t index1, indices_t index2, indices_t index3, indices_t index4, three_freqs_t const &three_freqs);
 
-    // std::vector<g2_iw_freq_vec_t> compute_g2_indices_loop(gf_struct_t const &gf_struct, double beta, channel_t channel, std::vector<four_indices_t> const &vec_four_indices, three_freqs_t const &three_freqs);
-    std::vector< g2_iw_freq_vec_t > compute_g2_indices_loop(gf_struct_t const &gf_struct, double beta, channel_t channel, std::vector<four_indices_t> const &vec_four_indices, three_freqs_t const &three_freqs);
+    g2_iw_freq_fix_t compute_g2_core(gf_struct_t const &gf_struct, double beta, channel_t channel, indices_t index1, indices_t index2, indices_t index3, indices_t index4, std::vector<three_freqs_t> const &three_freqs);
+
+    std::vector<g2_iw_freq_fix_t> compute_g2(gf_struct_t const &gf_struct, double beta, channel_t channel, std::vector<four_indices_t> const &four_indices, std::vector<three_freqs_t> const &three_freqs);
 
     double density_matrix_cutoff = 1e-15;
 
@@ -122,17 +122,17 @@ namespace pomerol2triqs {
     /// Retarded Green's function on real energy axis
     block_gf<refreq> G_w(gf_struct_t const &gf_struct, double beta, std::pair<double, double> const &energy_window, int n_w, double im_shift = 0);
 
-    /// Two-particle Green's function. Specify frequency cutoff, n_b and n_f.
+    /// Two-particle Green's function, Legacy support
     TRIQS_WRAP_ARG_AS_DICT
     g2_iw_freq_box_t G2_iw_legacy(g2_iw_legacy_params_t const &p);
 
-    /// Two-particle Green's function. Specify frequency cutoff, n_b and n_f.
+    /// Two-particle Green's function, in a low-frequency box with cutoff n_b and n_f
     TRIQS_WRAP_ARG_AS_DICT
     std::vector<g2_iw_freq_box_t> G2_iw_freq_box(g2_iw_freq_box_params_t const &p);
 
-    /// Two-particle Green's function. Specify three frequencies (wb, wf1, wf2).
+    /// Two-particle Green's function, for fixed frequencies (wb, wf1, wf2)
     TRIQS_WRAP_ARG_AS_DICT
-    std::vector<g2_iw_freq_vec_t> G2_iw_freqs_vec(g2_iw_freq_vec_params_t const &p);
+    std::vector<g2_iw_freq_fix_t> G2_iw_freq_fix(g2_iw_freq_fix_params_t const &p);
 
     /// Two-particle Green's function, Matsubara frequencies
     // TRIQS_WRAP_ARG_AS_DICT

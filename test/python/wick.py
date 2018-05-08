@@ -96,7 +96,7 @@ four_indices.append( (('dn',0), ('dn',0), ('up',0), ('up',0)) )  # dduu
 four_indices.append( (('up',0), ('dn',0), ('dn',0), ('up',0)) )  # uddu
 four_indices.append( (('dn',0), ('up',0), ('up',0), ('dn',0)) )  # duud
 
-G2_ph = ed.G2_iw_freq_box( vec_four_indices=four_indices, **common_g2_params )
+G2_ph = ed.G2_iw_freq_box( four_indices=four_indices, **common_g2_params )
 G2_ph_uuuu = G2_ph[0]
 G2_ph_dddd = G2_ph[1]
 G2_ph_uudd = G2_ph[2]

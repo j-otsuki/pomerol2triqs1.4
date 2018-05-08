@@ -469,7 +469,7 @@ namespace pomerol2triqs {
 */
 
   // core function for computing G2
-  std::vector<std::complex<double> > pomerol_ed::compute_g2(gf_struct_t const &gf_struct, double beta, channel_t channel, indices_t index1, indices_t index2, indices_t index3, indices_t index4, three_freqs_t const &three_freqs){
+  triqs::arrays::array<std::complex<double>, 1> pomerol_ed::compute_g2_core(gf_struct_t const &gf_struct, double beta, channel_t channel, indices_t index1, indices_t index2, indices_t index3, indices_t index4, std::vector<three_freqs_t> const &three_freqs){
 
     if (!matrix_h) TRIQS_RUNTIME_ERROR << "G2_iw: no Hamiltonian has been diagonalized";
     compute_rho(beta);
@@ -492,34 +492,35 @@ namespace pomerol2triqs {
     pom_g2.compute(false, {}, comm);
 
     // compute g2 value using MPI
-    g2_iw_freq_vec_t g2( three_freqs.size() );
+    g2_iw_freq_fix_t g2( three_freqs.size() );
     for(int i=comm.rank(); i<three_freqs.size(); i+=comm.size()){
       int wb = std::get<0>(three_freqs[i]);
       int wf1 = std::get<1>(three_freqs[i]);
       int wf2 = std::get<2>(three_freqs[i]);
-      g2[i] = -pom_g2(wb+wf1, wf2, wf1);
+      g2(i) = -pom_g2(wb+wf1, wf2, wf1);
     }
 
     // broadcast results
     for(int i=0; i<three_freqs.size(); i++){
       int sender = i % comm.size();
-      boost::mpi::broadcast(comm, g2[i], sender);
+      boost::mpi::broadcast(comm, g2(i), sender);
     }
 
     // std::cout << "End freq loop: rank" << comm.rank() << std::endl;
     return g2;
   }
 
-  std::vector< std::vector<std::complex<double> > > pomerol_ed::compute_g2_indices_loop(gf_struct_t const &gf_struct, double beta, channel_t channel, std::vector<four_indices_t> const &vec_four_indices, three_freqs_t const &three_freqs){
 
-    std::vector<g2_iw_freq_vec_t> vec_g2;
+  std::vector< triqs::arrays::array<std::complex<double>, 1> > pomerol_ed::compute_g2(gf_struct_t const &gf_struct, double beta, channel_t channel, std::vector<four_indices_t> const &four_indices, std::vector<three_freqs_t> const &three_freqs){
+
+    std::vector<g2_iw_freq_fix_t> vec_g2;
     // TODO: MPI
-    for( auto four_indices : vec_four_indices ){
-      indices_t index1 = std::get<0>(four_indices);
-      indices_t index2 = std::get<1>(four_indices);
-      indices_t index3 = std::get<2>(four_indices);
-      indices_t index4 = std::get<3>(four_indices);
-      vec_g2.push_back( compute_g2(gf_struct, beta, channel, index1, index2, index3, index4, three_freqs) );
+    for( auto ind4 : four_indices ){
+      indices_t index1 = std::get<0>(ind4);
+      indices_t index2 = std::get<1>(ind4);
+      indices_t index3 = std::get<2>(ind4);
+      indices_t index4 = std::get<3>(ind4);
+      vec_g2.push_back( compute_g2_core(gf_struct, beta, channel, index1, index2, index3, index4, three_freqs) );
     }
     return vec_g2;
   }
@@ -532,8 +533,8 @@ namespace pomerol2triqs {
     p2.channel = p.channel;
     p2.n_b = p.n_b;
     p2.n_f = p.n_f;
-    four_indices_t four_indices = std::make_tuple(p.index1, p.index2, p.index3, p.index4);
-    p2.vec_four_indices.push_back( four_indices );
+    four_indices_t ind4 = std::make_tuple(p.index1, p.index2, p.index3, p.index4);
+    p2.four_indices.push_back( ind4 );
 
     std::vector<g2_iw_freq_box_t> vec_g2 = G2_iw_freq_box(p2);
     return vec_g2[0];
@@ -542,7 +543,7 @@ namespace pomerol2triqs {
   auto pomerol_ed::G2_iw_freq_box(g2_iw_freq_box_params_t const &p) -> std::vector<g2_iw_freq_box_t> {
 
     // create a list of three frequencies, (wb, wf1, wf2)
-    three_freqs_t three_freqs;
+    std::vector<three_freqs_t> three_freqs;
     std::vector< std::tuple<int, int, int> > three_indices;  // (ib, if1, if2)
     {
       // indices of fermionic Matsubara frequencies [-n_f:n_f)
@@ -566,8 +567,8 @@ namespace pomerol2triqs {
     }
 
     // compute g2 values
-    // g2_iw_freq_vec_t g2_three_freqs = compute_g2(p.gf_struct, p.beta, p.channel, p.index1, p.index2, p.index3, p.index4, three_freqs);
-    std::vector<g2_iw_freq_vec_t> vec_g2_freq_vec = compute_g2_indices_loop(p.gf_struct, p.beta, p.channel, p.vec_four_indices, three_freqs);
+    // g2_iw_freq_fix_t g2_three_freqs = compute_g2(p.gf_struct, p.beta, p.channel, p.index1, p.index2, p.index3, p.index4, three_freqs);
+    std::vector<g2_iw_freq_fix_t> vec_g2_freq_vec = compute_g2(p.gf_struct, p.beta, p.channel, p.four_indices, three_freqs);
 
     // reshape G2 (from freq_vec to freq_box)
     std::vector<g2_iw_freq_box_t> vec_g2_freq_box;
@@ -577,7 +578,7 @@ namespace pomerol2triqs {
         int ib = std::get<0>(three_indices[i]);
         int if1 = std::get<1>(three_indices[i]);
         int if2 = std::get<2>(three_indices[i]);
-        g2(ib, if1, if2) = g2_freq_vec[i];
+        g2(ib, if1, if2) = g2_freq_vec(i);
       }
       vec_g2_freq_box.push_back(g2);
     }
@@ -586,11 +587,8 @@ namespace pomerol2triqs {
   }
 
 
-  // auto pomerol_ed::G2_iw_three_freqs(g2_three_freqs_params_t const &p) -> g2_iw_freq_vec_t {
-  //   return compute_g2(p.gf_struct, p.beta, p.channel, p.index1, p.index2, p.index3, p.index4, p.three_freqs);
-  // }
-  auto pomerol_ed::G2_iw_freqs_vec(g2_iw_freq_vec_params_t const &p) -> std::vector<g2_iw_freq_vec_t> {
-    return compute_g2_indices_loop(p.gf_struct, p.beta, p.channel, p.vec_four_indices, p.three_freqs);
+  auto pomerol_ed::G2_iw_freq_fix(g2_iw_freq_fix_params_t const &p) -> std::vector<g2_iw_freq_fix_t> {
+    return compute_g2(p.gf_struct, p.beta, p.channel, p.four_indices, p.three_freqs);
   }
 /*
   auto pomerol_ed::G2_iw_three_freqs(g2_three_freqs_params_t const &p) -> g2_three_freqs_t {
