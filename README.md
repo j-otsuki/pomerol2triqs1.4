@@ -19,8 +19,8 @@ Notation for the two-particle Green's functions is adopted from the
 Installation
 ------------
 
-- Install the latest version of [Pomerol](http://aeantipov.github.io/pomerol/) exact diagonalization library (`master` branch).
-- Install the latest version of [TRIQS](https://triqs.ipht.cnrs.fr/1.x/install.html) library (**`master`** branch).
+- Install the latest version of [Pomerol](http://aeantipov.github.io/pomerol/) exact diagonalization library.
+- Install **version 1.4.2** of [TRIQS](https://triqs.ipht.cnrs.fr/1.x/install.html) library.
 - `git clone https://github.com/j-otsuki/pomerol2triqs1.4.git`
 - `mkdir pomerol2triqs1.4.build && cd pomerol2triqs1.4.build`
 - `cmake ../pomerol2triqs1.4 -DCMAKE_BUILD_TYPE=Release -DTRIQS_PATH=<path_to_triqs_install_dir> -DPOMEROL_PATH=<path_to_pomerol_install_dir>`
