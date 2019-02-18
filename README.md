@@ -23,7 +23,7 @@ Installation
 - Install **version 1.4.2** of [TRIQS](https://triqs.ipht.cnrs.fr/1.x/install.html) library.
 - `git clone https://github.com/j-otsuki/pomerol2triqs1.4.git`
 - `mkdir pomerol2triqs1.4.build && cd pomerol2triqs1.4.build`
-- `cmake ../pomerol2triqs1.4 -DCMAKE_BUILD_TYPE=Release -DTRIQS_PATH=<path_to_triqs_install_dir> -DPOMEROL_PATH=<path_to_pomerol_install_dir>`
+- `cmake ../pomerol2triqs1.4 -DCMAKE_BUILD_TYPE=Release -DTRIQS_PATH=<path_to_triqs_install_dir> -Dpomerol_DIR==<path_to_pomerol_install_dir>/share/pomerol`
 - `make`
 - `make install`
 
